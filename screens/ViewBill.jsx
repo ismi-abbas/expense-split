@@ -103,7 +103,7 @@ const monthlyBills = [
 		month: 'May',
 		records: [
 			{
-				expenseTitle: 'Belanaja Hani makan',
+				expenseTitle: 'Belanja Hani makan',
 				payer: 'Emily',
 				paidTo: null,
 				amount: 83,
@@ -126,10 +126,10 @@ const monthlyBills = [
 		],
 	},
 	{
-		month: 'May',
+		month: 'April',
 		records: [
 			{
-				expenseTitle: 'Belanaja Hani makan',
+				expenseTitle: 'Belanja Hani makan',
 				payer: 'Emily',
 				paidTo: null,
 				amount: 83,

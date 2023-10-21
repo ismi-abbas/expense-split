@@ -1,39 +1,78 @@
-import React from 'react';
-import { Box, Text, Heading, VStack, Stack, Flex, View, ScrollView, Pressable } from 'native-base';
+import React, { useState } from 'react';
+import { Box, Text, Heading, VStack, Flex, Pressable, View } from 'native-base';
+import { useModal } from '../context/ModalProvider';
+import RecordModal from './RecordModal';
+import { useNavigation } from '@react-navigation/native';
 
 const MonthlyDetails = ({ bills }) => {
+	const navigation = useNavigation();
+	const [showModal, setShowModal] = useState(false);
+	const [editRecord, setEditRecord] = useState();
+
 	const currentDate = new Date();
 	const year = currentDate.getFullYear();
 
-	console.log(JSON.stringify(bills));
-
-	function handleBill(index) {
-		const data = bills.find((b, i) => i === index || b.id === index);
-		console.log(data);
-	}
+	const openRecordModal = record => {
+		navigation.navigate('Modal', { record: record });
+	};
 
 	return (
-		<View mb={10}>
+		<VStack space={2} mb={10} mt={4}>
 			{bills.map((b, i) => (
-				<Pressable key={i} onPress={() => handleBill(i)}>
-					<View>
-						<Box mt={4} bg="light.50" opacity={90} paddingX={4} paddingY={2} rounded="xl">
-							<Heading size="sm">
-								{b.month} {year}
-							</Heading>
+				<View key={i}>
+					<View
+						w="full"
+						maxW="400px"
+						_pressed={{
+							bg: 'light.200',
+						}}
+						bg="light.100"
+						paddingX={4}
+						paddingY={2}
+						rounded="xl">
+						<Box maxW="full" p={2}>
+							<Box>
+								<Heading size="sm">
+									{b.month} {year}
+								</Heading>
+							</Box>
 
-							<Flex size="md" h={'auto'}>
-								{b.records.map((rec, idx) => (
-									<Box h={8} key={idx} mt={2}>
-										<Text size="md">{rec.type === 'expense' ? rec.expenseTitle : 'You paid'}</Text>
-									</Box>
-								))}
-							</Flex>
+							<VStack space={2} mt={2}>
+								{b.records.map((record, index) => {
+									return (
+										<Pressable
+											key={index}
+											onPress={() => openRecordModal(record)}
+											bg="light.200"
+											rounded="lg"
+											p={2}
+											_pressed={{
+												bg: 'light.100',
+											}}>
+											<Flex direction="row" w="full" h="auto" alignItems="center">
+												<Flex
+													bg="light.100"
+													h={8}
+													w={8}
+													alignItems="center"
+													justifyContent="center"
+													rounded="lg"
+													mr={4}>
+													<Text fontWeight="bold">{index}</Text>
+												</Flex>
+												<Flex>
+													<Text fontSize={'md'}>{record.type === 'expense' ? record.expenseTitle : 'You paid'}</Text>
+												</Flex>
+											</Flex>
+										</Pressable>
+									);
+								})}
+							</VStack>
 						</Box>
 					</View>
-				</Pressable>
+				</View>
 			))}
-		</View>
+		</VStack>
 	);
 };
 
