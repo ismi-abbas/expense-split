@@ -4,8 +4,8 @@ import { Icon } from '@rneui/themed';
 import ViewBill from './screens/ViewBill';
 import AddBill from './screens/AddBill';
 import User from './screens/User';
-import Settings from './screens/Settings';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Profile from './screens/Profile';
 
 const Tab = createBottomTabNavigator();
 const TabNavigator = () => {
@@ -17,18 +17,16 @@ const TabNavigator = () => {
 				options={{
 					title: 'Home',
 					headerShown: false,
-					tabBarShowLabel: false,
 					tabBarActiveTintColor: 'purple',
 					tabBarIcon: ({ color, size }) => <Icon name="user-plus" type="feather" color={color} size={size} />,
 				}}
 			/>
 
 			<Tab.Screen
-				name="View"
+				name="Group"
 				component={ViewBill}
 				options={{
 					headerShown: false,
-					tabBarShowLabel: false,
 					tabBarActiveTintColor: 'purple',
 					tabBarIcon: ({ color, size }) => <Icon name="users" type="feather" color={color} size={size} />,
 				}}
@@ -39,29 +37,26 @@ const TabNavigator = () => {
 				component={AddBill}
 				options={{
 					headerShown: false,
-					tabBarShowLabel: false,
 					tabBarActiveTintColor: 'purple',
 					tabBarIcon: ({ color, size }) => <Icon name="plus-square" type="feather" color={color} size={size} />,
 				}}
 			/>
 
 			<Tab.Screen
-				name="User"
+				name="Records"
 				component={User}
 				options={{
 					headerShown: false,
-					tabBarShowLabel: false,
 					tabBarActiveTintColor: 'purple',
 					tabBarIcon: ({ color, size }) => <Icon name="pie-chart" type="feather" color={color} size={size} />,
 				}}
 			/>
 
 			<Tab.Screen
-				name="Settings"
-				component={Settings}
+				name="Profile"
+				component={Profile}
 				options={{
 					headerShown: false,
-					tabBarShowLabel: false,
 					tabBarActiveTintColor: 'purple',
 					tabBarIcon: ({ color, size }) => <Icon name="user" type="feather" color={color} size={size} />,
 				}}

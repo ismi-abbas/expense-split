@@ -1,4 +1,5 @@
-import bcrypt from 'bcrypt';
+// import bcrypt from 'bcrypt';
+import { format, compareAsc } from 'date-fns';
 
 const saltRounds = 10;
 
@@ -12,8 +13,17 @@ export const passwordStrength = password => {
 	return passwordRegex.test(password);
 };
 
-export const hashPasssword = password => {
-	const salt = bcrypt.genSaltSync(saltRounds);
-	const hashedPassword = bcrypt.hashSync(password, salt);
-	return { salt, password: hashedPassword };
+// export const hashPasssword = password => {
+// 	const salt = bcrypt.genSaltSync(saltRounds);
+// 	const hashedPassword = bcrypt.hashSync(password, salt);
+// 	return { salt, password: hashedPassword };
+// };
+
+export const formatDate = date => {
+	const timeStamp = new Date(date);
+	return format(timeStamp, 'dd MMMM yyyy');
+};
+
+export const truncate = (str, n) => {
+	return str.length > n ? str.slice(0, n - 1) + '...' : str;
 };
