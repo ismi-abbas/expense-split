@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Stack, Flex, HStack, VStack, Center, Heading, Text, ScrollView, StatusBar } from 'native-base';
+import { Box, Stack, Flex, HStack, VStack, Center, Heading, Text, ScrollView, StatusBar, View } from 'native-base';
 import { Icon } from '@rneui/themed';
 import MonthlyDetails from '../components/MonthlyDetails';
 
@@ -125,6 +125,32 @@ const monthlyBills = [
 			},
 		],
 	},
+	{
+		month: 'May',
+		records: [
+			{
+				expenseTitle: 'Belanaja Hani makan',
+				payer: 'Emily',
+				paidTo: null,
+				amount: 83,
+				type: 'expense',
+			},
+			{
+				expenseTitle: 'Grab car to own',
+				payer: 'You',
+				paidTo: null,
+				amount: 23,
+				type: 'expense',
+			},
+			{
+				expenseTitle: 'Pub crawl',
+				payer: 'Zeus',
+				paidTo: null,
+				amount: 83,
+				type: 'expense',
+			},
+		],
+	},
 ];
 
 const ViewBill = ({ expenseTitle, createdBy, createdDate, expenseDetails }) => {
@@ -134,7 +160,7 @@ const ViewBill = ({ expenseTitle, createdBy, createdDate, expenseDetails }) => {
 	createdDate = Date.now();
 
 	return (
-		<Box paddingTop={20} alignSelf="center" width="full" paddingX={10} bg="purple.200" height="full">
+		<View paddingTop={20} alignSelf="center" paddingX={10} bg="purple.200">
 			<StatusBar barStyle={'light-content'} />
 
 			{/* Title */}
@@ -213,14 +239,10 @@ const ViewBill = ({ expenseTitle, createdBy, createdDate, expenseDetails }) => {
 					))}
 				</VStack>
 			</HStack>
-			<Box>
-				<ScrollView h={'80'}>
-					{monthlyBills.map((record, index) => {
-						return <MonthlyDetails key={index} record={record} />;
-					})}
-				</ScrollView>
-			</Box>
-		</Box>
+			<ScrollView>
+				<MonthlyDetails bills={monthlyBills} />
+			</ScrollView>
+		</View>
 	);
 };
 

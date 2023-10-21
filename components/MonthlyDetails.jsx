@@ -1,26 +1,39 @@
 import React from 'react';
-import { Box, Text, Heading, VStack } from 'native-base';
+import { Box, Text, Heading, VStack, Stack, Flex, View, ScrollView, Pressable } from 'native-base';
 
-const MonthlyDetails = ({ record }) => {
+const MonthlyDetails = ({ bills }) => {
 	const currentDate = new Date();
 	const year = currentDate.getFullYear();
 
-	console.log(JSON.stringify(record));
+	console.log(JSON.stringify(bills));
+
+	function handleBill(index) {
+		const data = bills.find((b, i) => i === index || b.id === index);
+		console.log(data);
+	}
 
 	return (
-		<Box mt={4} bg="light.50" opacity={90} paddingX={4} paddingY={2} rounded="xl" h="40">
-			<Heading size="sm">
-				{record.month} {year}
-			</Heading>
+		<View mb={10}>
+			{bills.map((b, i) => (
+				<Pressable key={i} onPress={() => handleBill(i)}>
+					<View>
+						<Box mt={4} bg="light.50" opacity={90} paddingX={4} paddingY={2} rounded="xl">
+							<Heading size="sm">
+								{b.month} {year}
+							</Heading>
 
-			<VStack h={'full'}>
-				{record.records.map((rec, idx) => (
-					<Text size="md" key={idx}>
-						{rec.type === 'expense' ? rec.expenseTitle : 'You paid'}
-					</Text>
-				))}
-			</VStack>
-		</Box>
+							<Flex size="md" h={'auto'}>
+								{b.records.map((rec, idx) => (
+									<Box h={8} key={idx} mt={2}>
+										<Text size="md">{rec.type === 'expense' ? rec.expenseTitle : 'You paid'}</Text>
+									</Box>
+								))}
+							</Flex>
+						</Box>
+					</View>
+				</Pressable>
+			))}
+		</View>
 	);
 };
 

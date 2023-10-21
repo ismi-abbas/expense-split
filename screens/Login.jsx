@@ -1,5 +1,4 @@
-import { View } from 'react-native';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
 	Box,
 	FormControl,
@@ -13,8 +12,11 @@ import {
 	Flex,
 	Text,
 } from 'native-base';
+import { Link } from '@react-navigation/native';
+import { useLogin } from '../context/LoginProvider';
 
-const Login = () => {
+const Login = ({ navigation }) => {
+	const { setIsLoggedIn } = useLogin();
 	const [username, setUsername] = useState();
 	const [password, setPassword] = useState();
 
@@ -25,16 +27,16 @@ const Login = () => {
 			username,
 			password,
 		});
-		if (username === '') {
+		if (username === '' || username === undefined) {
 			toast.show({
 				title: 'Please enter your username',
 			});
-		}
-
-		if (password === '') {
+		} else if (password === '' || username === undefined) {
 			toast.show({
 				title: 'Please enter your password',
 			});
+		} else {
+			setIsLoggedIn(true);
 		}
 	};
 
@@ -43,6 +45,11 @@ const Login = () => {
 			title: 'Reset password request has been sent to your email address',
 		});
 	};
+
+	const handleSignUp = () => {
+		navigation.navigate('SignUp');
+	};
+
 	return (
 		<Box
 			flex="1"
@@ -60,8 +67,20 @@ const Login = () => {
 					</Heading>
 					<FormControl mt={4}>
 						<Stack mx="4">
-							<FormControl.Label>Username</FormControl.Label>
-							<Input type="text" placeholder="username/email" onChangeText={value => setUsername(value)} />
+							<FormControl.Label
+								_text={{
+									fontSize: 'md',
+								}}>
+								Username
+							</FormControl.Label>
+							<Input
+								size="lg"
+								variant="rounded"
+								keyboardType="default"
+								type="text"
+								placeholder="username/email"
+								onChangeText={value => setUsername(value)}
+							/>
 							<FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
 								Atleast 6 characters are required.
 							</FormControl.ErrorMessage>
@@ -69,8 +88,19 @@ const Login = () => {
 					</FormControl>
 					<FormControl isRequired mt={4}>
 						<Stack mx="4">
-							<FormControl.Label>Password</FormControl.Label>
-							<Input type="password" placeholder="password" onChangeText={value => setPassword(value)} />
+							<FormControl.Label
+								_text={{
+									fontSize: 'md',
+								}}>
+								Password
+							</FormControl.Label>
+							<Input
+								size="lg"
+								variant="rounded"
+								type="password"
+								placeholder="password"
+								onChangeText={value => setPassword(value)}
+							/>
 							<FormControl.HelperText>Must be atleast 6 characters.</FormControl.HelperText>
 							<FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
 								Atleast 6 characters are required.
@@ -78,7 +108,7 @@ const Login = () => {
 
 							<Flex alignItems="flex-end">
 								<Button variant="link" colorScheme="purple" onPress={() => handleReset()}>
-									Reset Password
+									Forgot password?
 								</Button>
 							</Flex>
 						</Stack>
@@ -88,17 +118,21 @@ const Login = () => {
 
 			<Box alignItems="center" mt={20}>
 				<Button
-					size="md"
+					py={2}
+					size="lg"
 					mt={4}
 					mb={6}
-					w="24"
+					w="full"
 					rounded="full"
 					bg="purple.600"
 					_pressed={{
 						bgColor: 'purple.500',
 					}}
+					_text={{
+						fontWeight: 500,
+					}}
 					onPress={() => handleLogin()}>
-					Sign In
+					LOGIN
 				</Button>
 
 				<Box flexDirection="row" display="flex" w="full" alignItems="center" justifyContent="center">
@@ -110,8 +144,8 @@ const Login = () => {
 				</Box>
 
 				<Box>
-					<Button variant="link" colorScheme="purple" onPress={() => console.log('Sign Up')}>
-						Sign Up
+					<Button variant="link" colorScheme="purple" onPress={() => handleSignUp()}>
+						SIGN UP
 					</Button>
 				</Box>
 			</Box>
