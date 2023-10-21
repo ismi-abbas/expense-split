@@ -328,3 +328,72 @@ export const userDetails = {
 	accountStatus: 'active',
 	groups: ['Penang Trip', 'Perak Trip', 'Staycation'],
 };
+
+export const activities = [
+	{
+		id: 1,
+		type: 'transaction',
+		amount: '100',
+		transferTo: 'Zeus',
+	},
+	{
+		id: 2,
+		type: 'group',
+		addedTo: 'Room 3A',
+		addedBy: 'Zan',
+	},
+	{
+		id: 3,
+		type: 'group-request',
+		requestedTo: 'Room 3A-2',
+		status: 'active',
+	},
+	{
+		id: 4,
+		type: 'other',
+		addedTo: 'Room 3A',
+		addedBy: 'Zan',
+	},
+	{
+		id: 5,
+		type: 'transaction',
+		amount: '100',
+		transferTo: 'Zeus',
+	},
+	{
+		id: 6,
+		type: 'group',
+		addedTo: 'Room 3A',
+		addedBy: 'Zan',
+	},
+	{
+		id: 7,
+		type: 'group-request',
+		requestedTo: 'Room 3A-2',
+		status: 'active',
+	},
+	{
+		id: 8,
+		type: 'other',
+		addedTo: 'Room 3A',
+		addedBy: 'Zan',
+	},
+	{
+		id: 9,
+		type: 'group',
+		addedTo: 'Room 3A',
+		addedBy: 'Zan',
+	},
+	{
+		id: 10,
+		type: 'group-request',
+		requestedTo: 'Room 3A-2',
+		status: 'active',
+	},
+	{
+		id: 11,
+		type: 'other',
+		addedTo: 'Room 3A',
+		addedBy: 'Zan',
+	},
+];

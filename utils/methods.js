@@ -1,4 +1,4 @@
-// import bcrypt from 'bcrypt';
+// import { genSaltSync, hashSync } from 'bcryptjs';
 import { format, compareAsc } from 'date-fns';
 
 const saltRounds = 10;
@@ -14,8 +14,8 @@ export const passwordStrength = password => {
 };
 
 // export const hashPasssword = password => {
-// 	const salt = bcrypt.genSaltSync(saltRounds);
-// 	const hashedPassword = bcrypt.hashSync(password, salt);
+// 	const salt = genSaltSync(saltRounds);
+// 	const hashedPassword = hashSync(password, salt);
 // 	return { salt, password: hashedPassword };
 // };
 

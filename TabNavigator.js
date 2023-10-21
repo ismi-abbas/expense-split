@@ -3,7 +3,7 @@ import Home from './screens/Home';
 import { Icon } from '@rneui/themed';
 import ViewBill from './screens/ViewBill';
 import AddBill from './screens/AddBill';
-import User from './screens/User';
+import Activities from './screens/Activities';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Profile from './screens/Profile';
 
@@ -43,12 +43,12 @@ const TabNavigator = () => {
 			/>
 
 			<Tab.Screen
-				name="Records"
-				component={User}
+				name="Activities"
+				component={Activities}
 				options={{
 					headerShown: false,
 					tabBarActiveTintColor: 'purple',
-					tabBarIcon: ({ color, size }) => <Icon name="pie-chart" type="feather" color={color} size={size} />,
+					tabBarIcon: ({ color, size }) => <Icon name="activity" type="feather" color={color} size={size} />,
 				}}
 			/>
 

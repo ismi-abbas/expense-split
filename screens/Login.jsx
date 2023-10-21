@@ -13,7 +13,6 @@ import {
 	Text,
 	View,
 } from 'native-base';
-import { Link } from '@react-navigation/native';
 import { useLogin } from '../context/LoginProvider';
 import BaseLayout from '../BaseLayout';
 
