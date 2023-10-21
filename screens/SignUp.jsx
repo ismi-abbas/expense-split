@@ -15,7 +15,7 @@ import {
 	VStack,
 } from 'native-base';
 import { useState } from 'react';
-import BaseLayout from '../BaseLayout';
+import BaseLayout from '../components/BaseLayout';
 
 const SignUp = ({ navigation }) => {
 	const toast = useToast();

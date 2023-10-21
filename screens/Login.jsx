@@ -14,7 +14,7 @@ import {
 	View,
 } from 'native-base';
 import { useLogin } from '../context/LoginProvider';
-import BaseLayout from '../BaseLayout';
+import BaseLayout from '../components/BaseLayout';
 
 const Login = ({ navigation }) => {
 	const { setIsLoggedIn } = useLogin();

@@ -1,7 +1,7 @@
 import React from 'react';
 import Home from './screens/Home';
 import { Icon } from '@rneui/themed';
-import ViewBill from './screens/ViewBill';
+import Group from './screens/Group';
 import AddBill from './screens/AddBill';
 import Activities from './screens/Activities';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -24,7 +24,7 @@ const TabNavigator = () => {
 
 			<Tab.Screen
 				name="Group"
-				component={ViewBill}
+				component={Group}
 				options={{
 					headerShown: false,
 					tabBarActiveTintColor: 'purple',

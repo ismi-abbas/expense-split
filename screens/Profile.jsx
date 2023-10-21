@@ -1,6 +1,6 @@
 import { View, Button, Heading, Flex, VStack, Text, FormControl, Input, Stack, HStack, Pressable } from 'native-base';
 import { useLogin } from '../context/LoginProvider';
-import BaseLayout from '../BaseLayout';
+import BaseLayout from '../components/BaseLayout';
 import { userDetails } from '../DummyData';
 import { truncate } from '../utils/methods';
 import { Icon } from '@rneui/base';

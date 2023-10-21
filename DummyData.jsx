@@ -327,6 +327,36 @@ export const userDetails = {
 	accountID: '80912837',
 	accountStatus: 'active',
 	groups: ['Penang Trip', 'Perak Trip', 'Staycation'],
+	friends: [
+		{
+			name: 'Darren',
+			id: 1,
+		},
+		{
+			name: 'Frank',
+			id: 2,
+		},
+		{
+			name: 'Allister',
+			id: 3,
+		},
+		{
+			name: 'Jonson',
+			id: 4,
+		},
+		{
+			name: 'Zeus',
+			id: 5,
+		},
+		{
+			name: 'Darren',
+			id: 1,
+		},
+		{
+			name: 'Darren',
+			id: 1,
+		},
+	],
 };
 
 export const activities = [

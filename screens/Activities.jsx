@@ -1,4 +1,4 @@
-import BaseLayout from '../BaseLayout';
+import BaseLayout from '../components/BaseLayout';
 import { Box, Flex, Heading, Text, VStack, View, ScrollView, FlatList } from 'native-base';
 import { Icon } from '@rneui/base';
 import { activities } from '../DummyData';
@@ -7,11 +7,11 @@ const Activities = () => {
 	return (
 		<BaseLayout bgColor="purple.200">
 			<Flex
-				w="400px"
+				w="350px"
 				_android={{
-					w: '350px',
+					w: '340px',
 				}}
-				mt={20}
+				mt={10}
 				justifyContent="center"
 				maxW="400px">
 				<Flex alignItems="start" alignContent="center">
@@ -22,7 +22,7 @@ const Activities = () => {
 					data={activities}
 					renderItem={({ item }) => (
 						<Flex direction="row" rounded="lg" p={2} bg="light.50" alignItems="center" my={1}>
-							<Flex alignItems="center" justifyContent="center" p={4}>
+							<Flex direction="row" alignItems="center" justifyContent="center" p={4}>
 								<ActivityIcon type={item.type} />
 							</Flex>
 							<TransactionDetails activity={item} />

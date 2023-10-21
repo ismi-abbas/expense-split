@@ -1,11 +1,11 @@
 import React from 'react';
-import { Box, Stack, Flex, HStack, VStack, Center, Heading, Text, ScrollView, StatusBar, View } from 'native-base';
+import { Box, Stack, Flex, HStack, VStack, Center, Heading, Text, ScrollView, View, FlatList } from 'native-base';
 import { Icon } from '@rneui/themed';
 import MonthlyDetails from '../components/MonthlyDetails';
-import BaseLayout from '../BaseLayout';
+import BaseLayout from '../components/BaseLayout';
 import { monthlyBills, users, groupExpenseDetails } from '../DummyData';
 
-const ViewBill = ({ expenseTitle, createdBy, createdDate, expenseDetails }) => {
+const Group = ({ expenseTitle, createdBy, createdDate, expenseDetails }) => {
 	expenseTitle = 'Penang Trip';
 	expenseDetails = 'Graduation trip yoohoooooo ';
 	createdBy = 'Amelia';
@@ -89,12 +89,17 @@ const ViewBill = ({ expenseTitle, createdBy, createdDate, expenseDetails }) => {
 						))}
 					</VStack>
 				</HStack>
-				<ScrollView>
+				<FlatList
+					showsVerticalScrollIndicator={false}
+					data={monthlyBills}
+					renderItem={({ item }) => <MonthlyDetails bill={item} />}
+				/>
+				{/* <ScrollView>
 					<MonthlyDetails bills={monthlyBills} />
-				</ScrollView>
+				</ScrollView> */}
 			</View>
 		</BaseLayout>
 	);
 };
 
-export default ViewBill;
+export default Group;
