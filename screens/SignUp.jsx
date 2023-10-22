@@ -26,7 +26,7 @@ const SignUp = ({ navigation }) => {
 	const [passwordConfirmation, setPasswordConfirmation] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
 
-	const showErrorToast = message => {
+	const showErrorToast = (message) => {
 		toast.show({
 			title: message,
 		});
@@ -55,7 +55,7 @@ const SignUp = ({ navigation }) => {
 
 	return (
 		<BaseLayout bgColor="light.50">
-			<View flex={1} flexDirection="column" justifyContent="center" w="300px" maxWidth="400px">
+			<Box safeAreaTop={true} flex={1} justifyContent="center" mx={5}>
 				<Box alignItems="center">
 					<Box w="full">
 						<Heading size="xl" textAlign="center">
@@ -67,11 +67,20 @@ const SignUp = ({ navigation }) => {
 									<FormControl.Label
 										_text={{
 											fontSize: 'sm',
-										}}>
+										}}
+									>
 										Full Name
 									</FormControl.Label>
-									<Input size="lg" type="text" keyboardType="default" onChangeText={setFullName} variant="rounded" />
-									<FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="md" />}>
+									<Input
+										size="lg"
+										type="text"
+										keyboardType="default"
+										onChangeText={setFullName}
+										variant="rounded"
+									/>
+									<FormControl.ErrorMessage
+										leftIcon={<WarningOutlineIcon size="md" />}
+									>
 										At least 6 characters are required.
 									</FormControl.ErrorMessage>
 								</Stack>
@@ -81,7 +90,8 @@ const SignUp = ({ navigation }) => {
 									<FormControl.Label
 										_text={{
 											fontSize: 'sm',
-										}}>
+										}}
+									>
 										Email Address
 									</FormControl.Label>
 									<Input
@@ -92,7 +102,9 @@ const SignUp = ({ navigation }) => {
 										onChangeText={setEmail}
 										variant="rounded"
 									/>
-									<FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
+									<FormControl.ErrorMessage
+										leftIcon={<WarningOutlineIcon size="xs" />}
+									>
 										At least 6 characters are required.
 									</FormControl.ErrorMessage>
 								</Stack>
@@ -102,7 +114,8 @@ const SignUp = ({ navigation }) => {
 									<FormControl.Label
 										_text={{
 											fontSize: 'sm',
-										}}>
+										}}
+									>
 										Phone Number
 									</FormControl.Label>
 									<Input
@@ -112,7 +125,9 @@ const SignUp = ({ navigation }) => {
 										onChangeText={setPhoneNumber}
 										variant="rounded"
 									/>
-									<FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
+									<FormControl.ErrorMessage
+										leftIcon={<WarningOutlineIcon size="xs" />}
+									>
 										At least 6 characters are required.
 									</FormControl.ErrorMessage>
 								</Stack>
@@ -122,7 +137,8 @@ const SignUp = ({ navigation }) => {
 									<FormControl.Label
 										_text={{
 											fontSize: 'sm',
-										}}>
+										}}
+									>
 										Password
 									</FormControl.Label>
 									<Input
@@ -132,8 +148,12 @@ const SignUp = ({ navigation }) => {
 										onChangeText={setPassword}
 										variant="rounded"
 									/>
-									<FormControl.HelperText>Must be at least 6 characters.</FormControl.HelperText>
-									<FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
+									<FormControl.HelperText>
+										Must be at least 6 characters.
+									</FormControl.HelperText>
+									<FormControl.ErrorMessage
+										leftIcon={<WarningOutlineIcon size="xs" />}
+									>
 										At least 6 characters are required.
 									</FormControl.ErrorMessage>
 								</Stack>
@@ -143,7 +163,8 @@ const SignUp = ({ navigation }) => {
 									<FormControl.Label
 										_text={{
 											fontSize: 'sm',
-										}}>
+										}}
+									>
 										Confirm Password
 									</FormControl.Label>
 									<Input
@@ -174,18 +195,30 @@ const SignUp = ({ navigation }) => {
 							fontWeight: 500,
 						}}
 						isLoading={isLoading}
-						onPress={handleSignUp}>
+						onPress={handleSignUp}
+					>
 						Create Account
 					</Button>
 
-					<Flex direction="row" alignItems="center" alignItem="center" justifyContent="center">
+					<Flex
+						direction="row"
+						alignItems="center"
+						alignItem="center"
+						justifyContent="center"
+					>
 						<Text mr={0}>Alredy have an account?</Text>
-						<Button variant="link" onPress={() => navigation.goBack()} ml={0} pl={1} colorScheme="purple">
+						<Button
+							variant="link"
+							onPress={() => navigation.goBack()}
+							ml={0}
+							pl={1}
+							colorScheme="purple"
+						>
 							Sign In
 						</Button>
 					</Flex>
 				</Stack>
-			</View>
+			</Box>
 		</BaseLayout>
 	);
 };

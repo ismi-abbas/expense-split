@@ -427,3 +427,5 @@ export const activities = [
 		addedBy: 'Zan',
 	},
 ];
+
+export const groups = ['Penang Trip', 'Room 3A-2', 'Room 3B'];

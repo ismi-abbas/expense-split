@@ -53,7 +53,7 @@ const Login = ({ navigation }) => {
 
 	return (
 		<BaseLayout bgColor="light.50">
-			<View flex={1} flexDirection="column" justifyContent="center" w="300px" maxWidth="400px">
+			<Box safeAreaTop={true} flex={1} justifyContent="center" mx={5}>
 				<Box alignItems="center">
 					<Box w="full">
 						<Heading size="xl" textAlign="center">
@@ -65,7 +65,8 @@ const Login = ({ navigation }) => {
 									<FormControl.Label
 										_text={{
 											fontSize: 'sm',
-										}}>
+										}}
+									>
 										Username
 									</FormControl.Label>
 									<Input
@@ -74,9 +75,11 @@ const Login = ({ navigation }) => {
 										keyboardType="default"
 										type="text"
 										placeholder="username/email"
-										onChangeText={value => setUsername(value)}
+										onChangeText={(value) => setUsername(value)}
 									/>
-									<FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
+									<FormControl.ErrorMessage
+										leftIcon={<WarningOutlineIcon size="xs" />}
+									>
 										Atleast 6 characters are required.
 									</FormControl.ErrorMessage>
 								</Stack>
@@ -86,7 +89,8 @@ const Login = ({ navigation }) => {
 									<FormControl.Label
 										_text={{
 											fontSize: 'sm',
-										}}>
+										}}
+									>
 										Password
 									</FormControl.Label>
 									<Input
@@ -94,15 +98,23 @@ const Login = ({ navigation }) => {
 										variant="rounded"
 										type="password"
 										placeholder="password"
-										onChangeText={value => setPassword(value)}
+										onChangeText={(value) => setPassword(value)}
 									/>
-									<FormControl.HelperText>Must be atleast 6 characters.</FormControl.HelperText>
-									<FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
+									<FormControl.HelperText>
+										Must be atleast 6 characters.
+									</FormControl.HelperText>
+									<FormControl.ErrorMessage
+										leftIcon={<WarningOutlineIcon size="xs" />}
+									>
 										Atleast 6 characters are required.
 									</FormControl.ErrorMessage>
 
 									<Flex alignItems="flex-end">
-										<Button variant="link" colorScheme="purple" onPress={() => handleReset()}>
+										<Button
+											variant="link"
+											colorScheme="purple"
+											onPress={() => handleReset()}
+										>
 											Forgot password?
 										</Button>
 									</Flex>
@@ -124,7 +136,8 @@ const Login = ({ navigation }) => {
 						_text={{
 							fontWeight: 500,
 						}}
-						onPress={() => handleLogin()}>
+						onPress={() => handleLogin()}
+					>
 						Login
 					</Button>
 
@@ -138,7 +151,7 @@ const Login = ({ navigation }) => {
 						Sign Up
 					</Button>
 				</Stack>
-			</View>
+			</Box>
 		</BaseLayout>
 	);
 };

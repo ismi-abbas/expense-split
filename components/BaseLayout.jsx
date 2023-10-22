@@ -1,12 +1,21 @@
-import { Box, StatusBar, View } from 'native-base';
+import { Box, StatusBar, View, Flex } from 'native-base';
 
 const BaseLayout = ({ children, bgColor }) => {
 	return (
-		<Box safeAreaTop bg={bgColor}>
+		<Box bg={bgColor} justifyContent="start" alignItems="center">
 			<StatusBar barStyle={'default'} />
-			<View mt={2} alignSelf="center" paddingX={10} h="full">
+			<Flex
+				mt={4}
+				h="full"
+				_ios={{
+					w: '380px',
+				}}
+				_android={{
+					w: '350px',
+				}}
+			>
 				{children}
-			</View>
+			</Flex>
 		</Box>
 	);
 };

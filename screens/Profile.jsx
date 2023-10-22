@@ -1,4 +1,15 @@
-import { View, Button, Heading, Flex, VStack, Text, FormControl, Input, Stack, HStack, Pressable } from 'native-base';
+import {
+	Button,
+	Heading,
+	Flex,
+	VStack,
+	Text,
+	FormControl,
+	Input,
+	HStack,
+	Pressable,
+	Box,
+} from 'native-base';
 import { useLogin } from '../context/LoginProvider';
 import BaseLayout from '../components/BaseLayout';
 import { userDetails } from '../DummyData';
@@ -8,15 +19,15 @@ import { Icon } from '@rneui/base';
 const Profile = () => {
 	const { setIsLoggedIn } = useLogin();
 
-	const setEmail = value => {
+	const setEmail = (value) => {
 		console.log(value);
 	};
 
-	const setPhoneNumber = value => {
+	const setPhoneNumber = (value) => {
 		console.log(value);
 	};
 
-	const setAddress = value => {
+	const setAddress = (value) => {
 		console.log(value);
 	};
 
@@ -29,15 +40,21 @@ const Profile = () => {
 	};
 	return (
 		<BaseLayout bgColor="purple.100">
-			<View flex={1} flexDirection="column" justifyContent="center" w="300px" maxW="400px">
+			<Box safeAreaTop={true}>
 				<Flex alignItems="center" justifyContent="center" alignContent="center">
-					<Flex direction="row" alignItems="flex-end" justifyContent="space-between" w="full">
+					<Flex
+						direction="row"
+						alignItems="flex-end"
+						justifyContent="space-between"
+						w="full"
+					>
 						<Heading>Profile</Heading>
 						<Pressable
 							onPress={() => console.log('Edit user')}
 							_pressed={{
 								color: 'light.50',
-							}}>
+							}}
+						>
 							<Text fontSize="sm" fontWeight="bold">
 								Edit
 							</Text>
@@ -56,7 +73,8 @@ const Profile = () => {
 									_text={{
 										fontSize: 'sm',
 										color: 'black',
-									}}>
+									}}
+								>
 									Email Address
 								</FormControl.Label>
 								<Input
@@ -66,7 +84,7 @@ const Profile = () => {
 									keyboardType="default"
 									type="text"
 									value={userDetails.email}
-									onChangeText={value => setUsername(value)}
+									onChangeText={(value) => setUsername(value)}
 								/>
 							</VStack>
 						</FormControl>
@@ -76,7 +94,8 @@ const Profile = () => {
 									_text={{
 										fontSize: 'sm',
 										color: 'black',
-									}}>
+									}}
+								>
 									Phone Number
 								</FormControl.Label>
 								<Input
@@ -86,7 +105,7 @@ const Profile = () => {
 									keyboardType="default"
 									type="text"
 									value={userDetails.phoneNumber}
-									onChangeText={value => setUsername(value)}
+									onChangeText={(value) => setUsername(value)}
 								/>
 							</VStack>
 						</FormControl>
@@ -96,7 +115,8 @@ const Profile = () => {
 									_text={{
 										fontSize: 'sm',
 										color: 'black',
-									}}>
+									}}
+								>
 									Address
 								</FormControl.Label>
 								<Input
@@ -106,7 +126,7 @@ const Profile = () => {
 									keyboardType="default"
 									type="text"
 									value={truncate(userDetails.address, 20)}
-									onChangeText={value => setAddress(value)}
+									onChangeText={(value) => setAddress(value)}
 								/>
 							</VStack>
 						</FormControl>
@@ -119,12 +139,16 @@ const Profile = () => {
 						<Button rounded="full" colorScheme="purple" onPress={updateBankDetails}>
 							Update Bank Account Details
 						</Button>
-						<Button rounded="full" colorScheme="purple" onPress={() => setIsLoggedIn(false)}>
+						<Button
+							rounded="full"
+							colorScheme="purple"
+							onPress={() => setIsLoggedIn(false)}
+						>
 							Logout
 						</Button>
 					</VStack>
 				</Flex>
-			</View>
+			</Box>
 		</BaseLayout>
 	);
 };
