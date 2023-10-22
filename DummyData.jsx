@@ -428,4 +428,35 @@ export const activities = [
 	},
 ];
 
-export const groups = ['Penang Trip', 'Room 3A-2', 'Room 3B'];
+export const groups = [
+	{
+		id: 1,
+		name: 'Penang Trip',
+		totalBill: 500,
+		totalMember: 4,
+	},
+	{
+		id: 2,
+		name: 'Room 3A-2',
+		totalBill: 250,
+		totalMember: 2,
+	},
+	{
+		id: 3,
+		name: 'Room 3B',
+		totalBill: 150,
+		totalMember: 1,
+	},
+	{
+		id: 4,
+		name: 'Penang Trip',
+		totalBill: 800,
+		totalMember: 6,
+	},
+	{
+		id: 5,
+		name: 'Room 3A-2',
+		totalBill: 300,
+		totalMember: 3,
+	},
+];

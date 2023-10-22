@@ -46,11 +46,11 @@ const AddBill = () => {
 							alignItems="center"
 							justifyContent="flex-start"
 						>
-							{groups.map((group, index) => (
+							{groups.map((group) => (
 								<Pressable
 									mr={2}
 									mb={2}
-									key={index}
+									key={group.id}
 									_focus={{
 										bg: 'light.50',
 										borderWidth: 4,
@@ -64,7 +64,7 @@ const AddBill = () => {
 								>
 									<Center height={100} w={100} rounded="2xl" p={2}>
 										<Text fontSize="md" fontWeight="bold" textAlign="center">
-											{group}
+											{group.name}
 										</Text>
 									</Center>
 								</Pressable>

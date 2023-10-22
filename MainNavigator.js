@@ -14,6 +14,7 @@ import Activities from './screens/Activities';
 import Profile from './screens/Profile';
 import ViewGroup from './screens/ViewGroup';
 import Group from './screens/Group';
+import CreateGroup from './screens/CreateGroup';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -105,9 +106,18 @@ const ModalStackNavigator = () => {
 			<Stack.Screen
 				name="ViewGroup"
 				component={ViewGroup}
-				options={{
+				options={({ route }) => ({
+					title: `Group ${route.params.title}`,
 					headerShown: true,
-				}}
+				})}
+			/>
+			<Stack.Screen
+				name="CreateGroup"
+				component={CreateGroup}
+				options={({ route }) => ({
+					title: `Create Group`,
+					headerShown: true,
+				})}
 			/>
 		</Stack.Navigator>
 	);
