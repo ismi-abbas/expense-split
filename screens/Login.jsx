@@ -15,24 +15,45 @@ import {
 } from 'native-base';
 import { useLogin } from '../context/LoginProvider';
 import BaseLayout from '../components/BaseLayout';
+import { supabase } from '../lib/supabase';
 
 const Login = ({ navigation }) => {
+	// context
 	const { setIsLoggedIn } = useLogin();
-	const [username, setUsername] = useState();
-	const [password, setPassword] = useState();
+
+	const [email, setEmail] = useState('');
+	const [password, setPassword] = useState('');
+	const [loading, setLoading] = useState(false);
 
 	const toast = useToast();
 
-	const handleLogin = () => {
-		console.log({
-			username,
-			password,
+	const signInWithEmail = async () => {
+		setLoading(true);
+
+		const { data, error } = await supabase.auth.signInWithPassword({
+			email: email,
+			password: password,
 		});
-		if (username === '' || username === undefined) {
+
+		if (error) {
+			toast.show({
+				title: error.message,
+			});
+		}
+
+		if (data.user) {
+			setIsLoggedIn(true);
+		}
+
+		setLoading(false);
+	};
+
+	const handleLogin = () => {
+		if (email === '' || email === undefined) {
 			toast.show({
 				title: 'Please enter your username',
 			});
-		} else if (password === '' || username === undefined) {
+		} else if (password === '' || email === undefined) {
 			toast.show({
 				title: 'Please enter your password',
 			});
@@ -73,9 +94,10 @@ const Login = ({ navigation }) => {
 										size="lg"
 										variant="rounded"
 										keyboardType="default"
-										type="text"
+										type="email"
 										placeholder="username/email"
-										onChangeText={(value) => setUsername(value)}
+										onChangeText={(value) => setEmail(value)}
+										autoCapitalize={false}
 									/>
 									<FormControl.ErrorMessage
 										leftIcon={<WarningOutlineIcon size="xs" />}
@@ -139,6 +161,24 @@ const Login = ({ navigation }) => {
 						onPress={() => handleLogin()}
 					>
 						Login
+					</Button>
+
+					<Button
+						py={2}
+						size="lg"
+						w="full"
+						rounded="full"
+						bg="purple.600"
+						_pressed={{
+							bgColor: 'purple.500',
+						}}
+						_text={{
+							fontWeight: 500,
+						}}
+						onPress={() => signInWithEmail()}
+						_loading={loading}
+					>
+						Sign in with email
 					</Button>
 
 					<Flex direction="row" alignItems="center" justifyContent="center">

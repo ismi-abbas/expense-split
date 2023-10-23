@@ -460,3 +460,30 @@ export const groups = [
 		totalMember: 3,
 	},
 ];
+
+// sample user data from supabase
+const userData = {
+	app_metadata: { provider: 'email', providers: ['email'] },
+	aud: 'authenticated',
+	confirmed_at: '2023-10-22T17:13:37.33803Z',
+	created_at: '2023-10-22T17:13:37.335324Z',
+	email: 'abbas@test.com',
+	email_confirmed_at: '2023-10-22T17:13:37.33803Z',
+	id: '074c3266-a5e5-470d-93fe-2fafc1a002f6',
+	identities: [
+		{
+			created_at: '2023-10-22T17:13:37.336294Z',
+			id: '074c3266-a5e5-470d-93fe-2fafc1a002f6',
+			identity_data: [Object],
+			last_sign_in_at: '2023-10-22T17:13:37.336255Z',
+			provider: 'email',
+			updated_at: '2023-10-22T17:13:37.336294Z',
+			user_id: '074c3266-a5e5-470d-93fe-2fafc1a002f6',
+		},
+	],
+	last_sign_in_at: '2023-10-22T17:16:31.465968013Z',
+	phone: '',
+	role: 'authenticated',
+	updated_at: '2023-10-22T17:16:31.467571Z',
+	user_metadata: {},
+};

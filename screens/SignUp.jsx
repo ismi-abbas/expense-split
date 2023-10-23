@@ -13,6 +13,7 @@ import {
 	Flex,
 	Divider,
 	VStack,
+	Alert,
 } from 'native-base';
 import { useState } from 'react';
 import BaseLayout from '../components/BaseLayout';
@@ -32,7 +33,7 @@ const SignUp = ({ navigation }) => {
 		});
 	};
 
-	const handleSignUp = () => {
+	const handleSignUp = async () => {
 		if (!fullName || !email || !phoneNumber || !password || !passwordConfirmation) {
 			showErrorToast('Please fill all fields');
 			return;
@@ -41,6 +42,15 @@ const SignUp = ({ navigation }) => {
 		if (password !== passwordConfirmation) {
 			showErrorToast('Password mismatch');
 			return;
+		}
+
+		const { error } = await supabase.auth.signUp({
+			email: email,
+			password: password,
+		});
+
+		if (error) {
+			showErrorToast('Password mismatch' + error.message);
 		}
 
 		setIsLoading(true);

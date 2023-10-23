@@ -9,27 +9,39 @@ import {
 	HStack,
 	Pressable,
 	Box,
+	Alert,
 } from 'native-base';
+import { Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { useLogin } from '../context/LoginProvider';
 import BaseLayout from '../components/BaseLayout';
 import { userDetails } from '../DummyData';
 import { truncate } from '../utils/methods';
 import { Icon } from '@rneui/base';
+import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
 
-const Profile = () => {
+const Profile = ({ sessiond }) => {
 	const { setIsLoggedIn } = useLogin();
 
-	const setEmail = (value) => {
-		console.log(value);
-	};
+	const [session, setSession] = useState(null);
+	const [loading, setLoading] = useState(true);
+	const [username, setUsername] = useState('');
+	const [website, setWebsite] = useState('');
+	const [avatarUrl, setAvatarUrl] = useState('');
+	const [phoneNumber, setPhoneNumber] = useState('');
+	const [address, setAddress] = useState('');
+	const [fullName, setFullName] = useState('');
+	const [email, setEmail] = useState('');
 
-	const setPhoneNumber = (value) => {
-		console.log(value);
-	};
+	useEffect(() => {
+		supabase.auth.getSession().then(({ data: { session } }) => {
+			setSession(session);
+		});
 
-	const setAddress = (value) => {
-		console.log(value);
-	};
+		supabase.auth.onAuthStateChange((_event, session) => {
+			setSession(session);
+		});
+	}, []);
 
 	const changePassword = () => {
 		console.log('Password changed');
@@ -38,6 +50,71 @@ const Profile = () => {
 	const updateBankDetails = () => {
 		console.log('Bank details updated');
 	};
+
+	useEffect(() => {
+		if (session) getProfile();
+	}, [session]);
+
+	async function getProfile() {
+		try {
+			setLoading(true);
+			if (!session?.user) throw new Error('No user on the session!');
+
+			const { data, error, status } = await supabase
+				.from('profiles')
+				.select(`username, website, avatar_url, address, phone_number, full_name, email`)
+				.eq('id', session?.user.id)
+				.single();
+
+			if (error && status !== 406) {
+				throw error;
+			}
+
+			if (data) {
+				setUsername(data.username);
+				setWebsite(data.website);
+				setAvatarUrl(data.avatar_url);
+				setPhoneNumber(data.phone_number);
+				setFullName(data.full_name);
+				setEmail(data.email);
+				setAddress(data.address);
+			}
+		} catch (error) {
+			if (error) {
+				console.log(error.message);
+			}
+		} finally {
+			setLoading(false);
+		}
+	}
+
+	async function updateProfile({ username, website, avatar_url }) {
+		try {
+			setLoading(true);
+			if (!session?.user) throw new Error('No user on the session!');
+
+			const updates = {
+				id: session?.user.id,
+				username,
+				website,
+				avatar_url,
+				updated_at: new Date(),
+			};
+
+			const { error } = await supabase.from('profiles').upsert(updates);
+
+			if (error) {
+				throw error;
+			}
+		} catch (error) {
+			if (error instanceof Error) {
+				Alert.alert(error.message);
+			}
+		} finally {
+			setLoading(false);
+		}
+	}
+
 	return (
 		<BaseLayout bgColor="purple.100">
 			<Box safeAreaTop={true}>
@@ -63,7 +140,7 @@ const Profile = () => {
 
 					<HStack w="full" h={20} alignItems="center" justifyContent="center" space={4}>
 						<Icon size={50} name="face-man" type="material-community" />
-						<Heading size="sm">{userDetails.fullName}</Heading>
+						<Heading size="sm">{fullName}</Heading>
 					</HStack>
 
 					<VStack space={4} w="300px">
@@ -83,8 +160,8 @@ const Profile = () => {
 									variant="rounded"
 									keyboardType="default"
 									type="text"
-									value={userDetails.email}
-									onChangeText={(value) => setUsername(value)}
+									value={email}
+									onChangeText={(value) => console.log(value)}
 								/>
 							</VStack>
 						</FormControl>
@@ -104,8 +181,7 @@ const Profile = () => {
 									variant="rounded"
 									keyboardType="default"
 									type="text"
-									value={userDetails.phoneNumber}
-									onChangeText={(value) => setUsername(value)}
+									value={phoneNumber}
 								/>
 							</VStack>
 						</FormControl>
@@ -125,18 +201,34 @@ const Profile = () => {
 									variant="rounded"
 									keyboardType="default"
 									type="text"
-									value={truncate(userDetails.address, 20)}
-									onChangeText={(value) => setAddress(value)}
+									value={truncate(address, 20)}
 								/>
 							</VStack>
 						</FormControl>
 					</VStack>
 
 					<VStack space={4} mt={10} w="full" px={10}>
-						<Button rounded="full" colorScheme="purple" onPress={changePassword}>
+						<Button
+							rounded="full"
+							colorScheme="purple"
+							onPress={() =>
+								updateProfile({ username, website, avatar_url: avatarUrl })
+							}
+						>
+							Update Profile
+						</Button>
+						<Button
+							rounded="full"
+							colorScheme="purple"
+							onPress={() => changePassword()}
+						>
 							Change Password
 						</Button>
-						<Button rounded="full" colorScheme="purple" onPress={updateBankDetails}>
+						<Button
+							rounded="full"
+							colorScheme="purple"
+							onPress={() => updateBankDetails()}
+						>
 							Update Bank Account Details
 						</Button>
 						<Button
