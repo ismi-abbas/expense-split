@@ -14,13 +14,13 @@ import {
 import { Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { useLogin } from '../context/LoginProvider';
 import BaseLayout from '../components/BaseLayout';
-import { userDetails } from '../DummyData';
-import { truncate } from '../utils/methods';
+import { truncate } from '../lib/methods';
 import { Icon } from '@rneui/base';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const Profile = ({ sessiond }) => {
+const Profile = () => {
 	const { setIsLoggedIn } = useLogin();
 
 	const [session, setSession] = useState(null);
@@ -33,15 +33,17 @@ const Profile = ({ sessiond }) => {
 	const [fullName, setFullName] = useState('');
 	const [email, setEmail] = useState('');
 
-	useEffect(() => {
-		supabase.auth.getSession().then(({ data: { session } }) => {
-			setSession(session);
-		});
+	const logout = async () => {
+		try {
+			AsyncStorage.clear();
+			setIsLoggedIn(false);
+		} catch (err) {
+			console.log(err);
+		}
+	};
 
-		supabase.auth.onAuthStateChange((_event, session) => {
-			setSession(session);
-		});
-	}, []);
+	const data = AsyncStorage.getItem('userDetails');
+	console.log(data);
 
 	const changePassword = () => {
 		console.log('Password changed');
@@ -50,10 +52,6 @@ const Profile = ({ sessiond }) => {
 	const updateBankDetails = () => {
 		console.log('Bank details updated');
 	};
-
-	useEffect(() => {
-		if (session) getProfile();
-	}, [session]);
 
 	async function getProfile() {
 		try {
@@ -231,11 +229,7 @@ const Profile = ({ sessiond }) => {
 						>
 							Update Bank Account Details
 						</Button>
-						<Button
-							rounded="full"
-							colorScheme="purple"
-							onPress={() => setIsLoggedIn(false)}
-						>
+						<Button rounded="full" colorScheme="purple" onPress={() => logout()}>
 							Logout
 						</Button>
 					</VStack>

@@ -16,10 +16,11 @@ import {
 import { useLogin } from '../context/LoginProvider';
 import BaseLayout from '../components/BaseLayout';
 import { supabase } from '../lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Login = ({ navigation }) => {
 	// context
-	const { setIsLoggedIn } = useLogin();
+	const { setIsLoggedIn, setUserDetails } = useLogin();
 
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
@@ -28,37 +29,41 @@ const Login = ({ navigation }) => {
 	const toast = useToast();
 
 	const signInWithEmail = async () => {
-		setLoading(true);
-
-		const { data, error } = await supabase.auth.signInWithPassword({
-			email: email,
-			password: password,
-		});
-
-		if (error) {
-			toast.show({
-				title: error.message,
-			});
-		}
-
-		if (data.user) {
-			setIsLoggedIn(true);
-		}
-
-		setLoading(false);
-	};
-
-	const handleLogin = () => {
 		if (email === '' || email === undefined) {
 			toast.show({
-				title: 'Please enter your username',
+				title: 'Please enter your email',
 			});
 		} else if (password === '' || email === undefined) {
 			toast.show({
 				title: 'Please enter your password',
 			});
 		} else {
-			setIsLoggedIn(true);
+			try {
+				setLoading(true);
+				const { data, error, status } = await supabase
+					.from('users')
+					.select('id, email, password')
+					.eq('email', email)
+					.single();
+
+				if (status === 200) {
+					const isPasswordCorrect = comparePasswords(password, data.password);
+					if (isPasswordCorrect) {
+						console.log(data);
+
+						await AsyncStorage.setItem('userDetails', JSON.stringify(data));
+						setLoading(false);
+						setIsLoggedIn(true);
+					}
+				} else {
+					toast.show({
+						title: 'Invalid email or password',
+					});
+					setLoading(false);
+				}
+			} catch (error) {
+				console.log(error);
+			}
 		}
 	};
 
@@ -88,7 +93,7 @@ const Login = ({ navigation }) => {
 											fontSize: 'sm',
 										}}
 									>
-										Username
+										Email
 									</FormControl.Label>
 									<Input
 										size="lg"
@@ -97,7 +102,7 @@ const Login = ({ navigation }) => {
 										type="email"
 										placeholder="username/email"
 										onChangeText={(value) => setEmail(value)}
-										autoCapitalize={false}
+										autoCapitalize="none"
 									/>
 									<FormControl.ErrorMessage
 										leftIcon={<WarningOutlineIcon size="xs" />}
@@ -158,27 +163,10 @@ const Login = ({ navigation }) => {
 						_text={{
 							fontWeight: 500,
 						}}
-						onPress={() => handleLogin()}
+						isLoading={loading}
+						onPress={() => signInWithEmail()}
 					>
 						Login
-					</Button>
-
-					<Button
-						py={2}
-						size="lg"
-						w="full"
-						rounded="full"
-						bg="purple.600"
-						_pressed={{
-							bgColor: 'purple.500',
-						}}
-						_text={{
-							fontWeight: 500,
-						}}
-						onPress={() => signInWithEmail()}
-						_loading={loading}
-					>
-						Sign in with email
 					</Button>
 
 					<Flex direction="row" alignItems="center" justifyContent="center">

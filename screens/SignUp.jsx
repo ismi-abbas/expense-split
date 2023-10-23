@@ -1,4 +1,4 @@
-import { Link } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import {
 	Box,
 	Heading,
@@ -7,20 +7,19 @@ import {
 	Input,
 	WarningOutlineIcon,
 	Button,
-	View,
 	useToast,
 	Text,
 	Flex,
-	Divider,
-	VStack,
-	Alert,
 } from 'native-base';
 import { useState } from 'react';
 import BaseLayout from '../components/BaseLayout';
+import { supabase } from '../lib/supabase';
+import { hashPasssword } from '../lib/methods';
 
-const SignUp = ({ navigation }) => {
+const SignUp = () => {
+	const navigation = useNavigation();
 	const toast = useToast();
-	const [fullName, setFullName] = useState('');
+	const [username, setUsername] = useState('');
 	const [email, setEmail] = useState('');
 	const [phoneNumber, setPhoneNumber] = useState('');
 	const [password, setPassword] = useState('');
@@ -34,7 +33,7 @@ const SignUp = ({ navigation }) => {
 	};
 
 	const handleSignUp = async () => {
-		if (!fullName || !email || !phoneNumber || !password || !passwordConfirmation) {
+		if (!username || !email || !phoneNumber || !password || !passwordConfirmation) {
 			showErrorToast('Please fill all fields');
 			return;
 		}
@@ -44,23 +43,29 @@ const SignUp = ({ navigation }) => {
 			return;
 		}
 
-		const { error } = await supabase.auth.signUp({
+		const { salt, password: hashedPassword } = hashPasssword(password);
+
+		setIsLoading(true);
+		const { error, status } = await supabase.from('users').insert({
+			username: username,
 			email: email,
-			password: password,
+			password: hashedPassword,
+			address: '',
+			phone_number: phoneNumber,
+			role_id: 1,
 		});
 
 		if (error) {
-			showErrorToast('Password mismatch' + error.message);
+			showErrorToast('Error registering ' + error.message);
 		}
 
-		setIsLoading(true);
+		if (status === 201) {
+			showErrorToast('User registered');
+		}
 
-		setTimeout(() => {
-			toast.show({
-				title: `Account has been created for ${fullName}`,
-			});
-			setIsLoading(false);
-		}, 500);
+		setIsLoading(false);
+
+		navigation.navigate('Login');
 	};
 
 	return (
@@ -79,13 +84,14 @@ const SignUp = ({ navigation }) => {
 											fontSize: 'sm',
 										}}
 									>
-										Full Name
+										Username
 									</FormControl.Label>
 									<Input
+										autoCapitalize={false}
 										size="lg"
 										type="text"
 										keyboardType="default"
-										onChangeText={setFullName}
+										onChangeText={setUsername}
 										variant="rounded"
 									/>
 									<FormControl.ErrorMessage

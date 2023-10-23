@@ -1,5 +1,5 @@
-import { Center, Button, Modal, FormControl, Input, Heading, Text, VStack, Stack, Flex } from 'native-base';
-import { formatDate } from '../utils/methods';
+import { Center, Button, Modal, Heading, Text, VStack, Stack, Flex } from 'native-base';
+import { formatDate } from '../lib/methods';
 import { Icon } from '@rneui/themed';
 
 const RecordModal = ({ navigation, route }) => {
@@ -31,7 +31,11 @@ const SettleMentLayout = ({ record, closeModal }) => {
 		<Modal.Content maxWidth="400px" alignItems="center" py={10}>
 			<Stack direction="row" space={2}>
 				{record.type === 'settlement' ? (
-					<Icon name="credit-card-check-outline" type="material-community" color="black" />
+					<Icon
+						name="credit-card-check-outline"
+						type="material-community"
+						color="black"
+					/>
 				) : (
 					<></>
 				)}
@@ -65,7 +69,11 @@ const RecordLayout = ({ record, closeModal, settleUp }) => {
 		<Modal.Content maxWidth="400px" alignItems="center" py={10}>
 			<Stack direction="row" space={2}>
 				{record.type === 'settlement' ? (
-					<Icon name="credit-card-check-outline" type="material-community" color="black" />
+					<Icon
+						name="credit-card-check-outline"
+						type="material-community"
+						color="black"
+					/>
 				) : (
 					<></>
 				)}

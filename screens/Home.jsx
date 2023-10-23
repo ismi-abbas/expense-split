@@ -1,10 +1,40 @@
-import React from 'react';
-import { Text, View, Heading, Box, Flex, VStack, Button, Spacer } from 'native-base';
+import React, { useEffect, useState } from 'react';
 import BaseLayout from '../components/BaseLayout';
+import { Text, Heading, Box, Flex, VStack, Button, Spacer } from 'native-base';
 import { userDetails } from '../DummyData';
 import { Icon } from '@rneui/base';
+import { supabase } from '../lib/supabase';
+import { useLogin } from '../context/LoginProvider';
 
 const Home = () => {
+	const { session } = useLogin();
+	const [amountOwe, setAmountOwe] = useState();
+	const [amountOwed, setAmountOwed] = useState();
+
+	const getUserExpense = async () => {
+		try {
+			let { data, error } = await supabase
+				.from('expense_participants')
+				.select()
+				.eq('user_id', session.user.id);
+
+			if (error) {
+				throw error;
+			}
+
+			if (data) {
+				setAmountOwe(data[0].amount);
+				setAmountOwed(data[0].amount);
+			}
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
+	useEffect(() => {
+		getUserExpense();
+	}, [amountOwe]);
+
 	return (
 		<BaseLayout bgColor="purple.200">
 			<Box safeAreaTop={true}>
@@ -12,11 +42,11 @@ const Home = () => {
 					<Heading>Hello {userDetails.name}</Heading>
 				</Box>
 
-				<Flex direction="row" mt={10}>
+				<Flex direction="row" mt={10} w="full" justifyContent="space-between">
 					<Box
 						alignItems="center"
 						justifyContent="center"
-						w="190"
+						w="170px"
 						h="140px"
 						bg="light.50:alpha.70"
 						rounded="xl"
@@ -25,7 +55,7 @@ const Home = () => {
 							You Owe
 						</Text>
 						<Text fontWeight="extrabold" fontSize="3xl">
-							$56
+							$ {amountOwe ? amountOwe : '0'}
 						</Text>
 					</Box>
 					<Spacer />
@@ -35,7 +65,7 @@ const Home = () => {
 						}}
 						alignItems="center"
 						justifyContent="center"
-						w="190px"
+						w="170px"
 						h="140px"
 						bg="light.50:alpha.70"
 						rounded="xl"
@@ -44,7 +74,7 @@ const Home = () => {
 							You're owed
 						</Text>
 						<Text fontWeight="extrabold" fontSize="3xl">
-							$98
+							${amountOwed ? amountOwed : '0'}
 						</Text>
 					</Box>
 				</Flex>

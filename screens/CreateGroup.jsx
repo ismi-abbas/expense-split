@@ -83,7 +83,7 @@ const CreateGroup = () => {
 							color: 'black',
 						}}
 					>
-						Group Name
+						Group Nae
 					</FormControl.Label>
 					<Input variant="outline" rounded="full" size="lg" borderColor="black" />
 				</Box>
