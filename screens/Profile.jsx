@@ -11,10 +11,9 @@ import {
 	Box,
 	Alert,
 } from 'native-base';
-import { Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { useLogin } from '../context/LoginProvider';
 import BaseLayout from '../components/BaseLayout';
-import { truncate } from '../lib/methods';
+import { getData, truncate } from '../lib/methods';
 import { Icon } from '@rneui/base';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
@@ -32,6 +31,11 @@ const Profile = () => {
 	const [address, setAddress] = useState('');
 	const [fullName, setFullName] = useState('');
 	const [email, setEmail] = useState('');
+	const [userId, setUserId] = useState('');
+
+	useEffect(() => {
+		getUserProfile();
+	}, []);
 
 	const logout = async () => {
 		try {
@@ -42,8 +46,12 @@ const Profile = () => {
 		}
 	};
 
-	const data = AsyncStorage.getItem('userDetails');
-	console.log(data);
+	const getUserProfile = async () => {
+		const data = await getData('userDetails');
+		setUserId(data.id);
+
+		getProfile();
+	};
 
 	const changePassword = () => {
 		console.log('Password changed');
@@ -56,12 +64,10 @@ const Profile = () => {
 	async function getProfile() {
 		try {
 			setLoading(true);
-			if (!session?.user) throw new Error('No user on the session!');
-
 			const { data, error, status } = await supabase
-				.from('profiles')
-				.select(`username, website, avatar_url, address, phone_number, full_name, email`)
-				.eq('id', session?.user.id)
+				.from('users')
+				.select(`username, email, address, role_id, phone_number`)
+				.eq('id', userId)
 				.single();
 
 			if (error && status !== 406) {
@@ -70,10 +76,7 @@ const Profile = () => {
 
 			if (data) {
 				setUsername(data.username);
-				setWebsite(data.website);
-				setAvatarUrl(data.avatar_url);
 				setPhoneNumber(data.phone_number);
-				setFullName(data.full_name);
 				setEmail(data.email);
 				setAddress(data.address);
 			}

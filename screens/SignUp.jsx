@@ -87,7 +87,7 @@ const SignUp = () => {
 										Username
 									</FormControl.Label>
 									<Input
-										autoCapitalize={false}
+										autoCapitalize="none"
 										size="lg"
 										type="text"
 										keyboardType="default"

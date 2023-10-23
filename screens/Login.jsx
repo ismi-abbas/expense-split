@@ -17,6 +17,7 @@ import { useLogin } from '../context/LoginProvider';
 import BaseLayout from '../components/BaseLayout';
 import { supabase } from '../lib/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { comparePasswords, storeData } from '../lib/methods';
 
 const Login = ({ navigation }) => {
 	// context
@@ -49,17 +50,15 @@ const Login = ({ navigation }) => {
 				if (status === 200) {
 					const isPasswordCorrect = comparePasswords(password, data.password);
 					if (isPasswordCorrect) {
-						console.log(data);
-
-						await AsyncStorage.setItem('userDetails', JSON.stringify(data));
+						await storeData('userDetails', data);
 						setLoading(false);
 						setIsLoggedIn(true);
+					} else {
+						setLoading(false);
+						toast.show({
+							title: 'Invalid email or password',
+						});
 					}
-				} else {
-					toast.show({
-						title: 'Invalid email or password',
-					});
-					setLoading(false);
 				}
 			} catch (error) {
 				console.log(error);
