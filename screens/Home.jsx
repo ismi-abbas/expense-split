@@ -10,21 +10,32 @@ const Home = () => {
 	const { session } = useLogin();
 	const [amountOwe, setAmountOwe] = useState();
 	const [amountOwed, setAmountOwed] = useState();
+	const [friendOwe, setFriendOwe] = useState([]);
+	const [friendListOwe, setFriendListOwe] = useState();
 
 	const getUserExpense = async () => {
 		try {
-			let { data, error } = await supabase
-				.from('expense_participants')
-				.select()
-				.eq('user_id', session.user.id);
+			let { data: userExpense } = await supabase.from('expense_participants').select();
 
-			if (error) {
-				throw error;
-			}
+			let friendList = [];
 
-			if (data) {
-				setAmountOwe(data[0].amount);
-				setAmountOwed(data[0].amount);
+			if (userExpense) {
+				for (let expense of userExpense) {
+					if (expense.user_id !== 'e291c9c9-33c4-4c52-be8b-b2ca5d0ce58b') {
+						friendList.push(expense);
+						setFriendListOwe(expense);
+					}
+				}
+
+				const totalAmount = userExpense
+					.filter(
+						(exp) =>
+							exp.user_id !== 'e291c9c9-33c4-4c52-be8b-b2ca5d0ce58b' &&
+							exp.status.toLowerCase() === 'unsettled'
+					)
+					.reduce((total, exp) => total + exp.amount, 0);
+
+				setAmountOwe(totalAmount);
 			}
 		} catch (error) {
 			console.log(error);
@@ -40,6 +51,18 @@ const Home = () => {
 			<Box safeAreaTop={true}>
 				<Box>
 					<Heading>Hello {userDetails.name}</Heading>
+				</Box>
+
+				<Box mb={2}>
+					<Button
+						variant="subtle"
+						size="lg"
+						rounded="full"
+						colorScheme="purple"
+						onPress={() => getUserExpense()}
+					>
+						Refresh expense
+					</Button>
 				</Box>
 
 				<Flex direction="row" mt={10} w="full" justifyContent="space-between">
@@ -100,7 +123,7 @@ const Home = () => {
 						py={2}
 						overflow="hidden"
 					>
-						{userDetails.friends.slice(0, 4).map((friend) => (
+						{friendListOwe.map((friend) => (
 							<Flex
 								direction="row"
 								key={friend.id}

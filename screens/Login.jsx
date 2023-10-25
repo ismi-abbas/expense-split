@@ -16,11 +16,9 @@ import {
 import { useLogin } from '../context/LoginProvider';
 import BaseLayout from '../components/BaseLayout';
 import { supabase } from '../lib/supabase';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { comparePasswords, storeData } from '../lib/methods';
 
 const Login = ({ navigation }) => {
-	// context
 	const { setIsLoggedIn, setUserDetails } = useLogin();
 
 	const [email, setEmail] = useState('');
@@ -43,7 +41,7 @@ const Login = ({ navigation }) => {
 				setLoading(true);
 				const { data, error, status } = await supabase
 					.from('users')
-					.select('id, email, password')
+					.select('user_id, email, password')
 					.eq('email', email)
 					.single();
 
@@ -60,8 +58,16 @@ const Login = ({ navigation }) => {
 						});
 					}
 				}
+
+				if (error) {
+					toast.show({
+						title: 'User not found',
+					});
+					setLoading(false);
+				}
 			} catch (error) {
 				console.log(error);
+				setLoading(false);
 			}
 		}
 	};

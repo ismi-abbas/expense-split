@@ -25,6 +25,8 @@ const SignUp = () => {
 	const [password, setPassword] = useState('');
 	const [passwordConfirmation, setPasswordConfirmation] = useState('');
 	const [isLoading, setIsLoading] = useState(false);
+	const [fullName, setFullName] = useState('');
+	const [address, setAddress] = useState('');
 
 	const showErrorToast = (message) => {
 		toast.show({
@@ -33,6 +35,7 @@ const SignUp = () => {
 	};
 
 	const handleSignUp = async () => {
+		setIsLoading(true);
 		if (!username || !email || !phoneNumber || !password || !passwordConfirmation) {
 			showErrorToast('Please fill all fields');
 			return;
@@ -43,14 +46,14 @@ const SignUp = () => {
 			return;
 		}
 
-		const { salt, password: hashedPassword } = hashPasssword(password);
+		const { password: hashedPassword } = hashPasssword(password);
 
-		setIsLoading(true);
 		const { error, status } = await supabase.from('users').insert({
 			username: username,
 			email: email,
 			password: hashedPassword,
-			address: '',
+			full_name: fullName,
+			address: address,
 			phone_number: phoneNumber,
 			role_id: 1,
 		});
