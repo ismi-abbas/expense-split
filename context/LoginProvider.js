@@ -11,7 +11,9 @@ const LoginProvider = ({ children }) => {
 	const [userDetails, setUserDetails] = useState(null);
 
 	useEffect(() => {
-		getData('userDetails');
+		let data = getData('userDetails');
+		setUserDetails(data);
+		console.log(data);
 	}, [isLoggedIn, setIsLoggedIn]);
 
 	return (
