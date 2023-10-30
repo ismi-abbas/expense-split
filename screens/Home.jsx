@@ -26,6 +26,7 @@ const Home = () => {
 
 		const userData = await getData('userDetails');
 		let curr = data.filter((d) => d.user_id === userData.user_id);
+		console.log(curr[0]);
 		setCurrentUser(curr[0]);
 
 		if (error) {

@@ -1,15 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Stack, Flex, HStack, VStack, Heading, Text, View, FlatList } from 'native-base';
 import { Icon } from '@rneui/themed';
 import MonthlyDetails from '../components/MonthlyDetails';
 import BaseLayout from '../components/BaseLayout';
 import { monthlyBills, users, groupExpenseDetails } from '../DummyData';
+import { formatDate } from '../lib/methods';
 
-const ViewGroup = ({ route, navigation, expenseTitle, createdBy, createdDate, expenseDetails }) => {
-	const { title } = route.params;
+const ViewGroup = ({ route, navigation }) => {
+	const { title, data } = route.params;
 	expenseDetails = 'Graduation trip yoohoooooo ';
 	createdBy = 'Amelia';
 	createdDate = Date.now();
+
+	useEffect(() => {
+		console.log('data =====>', data);
+	});
 
 	return (
 		<BaseLayout bgColor="purple.200">
@@ -26,9 +31,9 @@ const ViewGroup = ({ route, navigation, expenseTitle, createdBy, createdDate, ex
 			</Box>
 
 			{/* Group Info */}
-			<Text>{expenseDetails}</Text>
-			<Text>Group created on {createdDate}</Text>
-			<Text>Group created by {createdBy}</Text>
+			<Text>{data.group_description}</Text>
+			<Text>Group created on {formatDate(data.created_at)}</Text>
+			<Text>Group created by {data.created_by}</Text>
 			<Box marginY={2}>
 				<Stack direction="row" alignItems="center" justifyContent="space-between">
 					<Stack direction="row" alignSelf="center">

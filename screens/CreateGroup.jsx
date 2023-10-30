@@ -10,11 +10,13 @@ import {
 	VStack,
 	TextArea,
 	IconButton,
+	Toast,
+	useToast,
 } from 'native-base';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import BaseLayout from '../components/BaseLayout';
-import { Icon } from '@rneui/base';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { supabase } from '../lib/supabase';
 
 const type = [
 	{
@@ -35,41 +37,84 @@ const type = [
 	},
 ];
 
-const selectedMembers = [
-	{
-		name: 'Jack',
-		id: 1,
-		sex: 'male',
-	},
-	{
-		name: 'Miller',
-		id: 2,
-		sex: 'female',
-	},
-	{
-		name: 'OD',
-		id: 3,
-		sex: 'female',
-	},
-	{
-		name: 'Pixel',
-		id: 4,
-		sex: 'male',
-	},
-];
+const CreateGroup = ({ navigation }) => {
+	const [selectedMember, setSelectedMember] = useState([]);
+	const [groupName, setGroupName] = useState('');
+	const [groupType, setGroupType] = useState([]);
+	const [groupDescription, setGroupDescription] = useState('');
+	const [users, setUsers] = useState([]);
 
-const CreateGroup = () => {
-	const [selectedValue, setSelectedValue] = useState(null);
-	const [selectedMember, setSelectedMember] = useState(null);
+	const toast = useToast();
 
-	const toggleSelection = (value) => {
-		setSelectedValue(value);
+	useEffect(() => {
+		getAllUser();
+	}, []);
+
+	const selectMembers = (value) => {
+		// check if member exist on array, remove it, else add it. Selection logic.
+		setSelectedMember(
+			selectedMember.includes(value)
+				? selectedMember.filter((member) => member !== value)
+				: [...selectedMember, value]
+		);
 	};
 
-	const selectMember = (value) => {
-		setSelectedMember(value);
+	const selectType = (value) => {
+		setGroupType(value);
 	};
-	console.log(selectedValue);
+
+	const getAllUser = async () => {
+		const { data, error } = await supabase.from('users').select('*');
+
+		if (data) {
+			setUsers(data);
+		}
+
+		if (error) {
+			console.log(error);
+		}
+	};
+
+	const registerGroup = async () => {
+		console.log(groupName, groupType, groupDescription, selectedMember);
+
+		const { data: groupData, error } = await supabase
+			.from('groups')
+			.insert({
+				group_name: groupName,
+				group_description: groupDescription,
+				group_type: groupType,
+			})
+			.select();
+
+		if (groupData) {
+			const groupMembersData = selectedMember.map((memberId) => ({
+				group_id: groupData.group_id,
+				user_id: memberId,
+				role: 'member',
+			}));
+
+			const { data, error } = await supabase
+				.from('group_members')
+				.insert(groupMembersData)
+				.select();
+
+			if (data) {
+				navigation.goBack();
+			}
+
+			if (error) {
+				toast.show({ title: 'Error creating group' });
+				console.log(error);
+			}
+		}
+
+		if (error) {
+			toast.show({ title: 'Error creating group' });
+			console.log(error);
+		}
+	};
+
 	return (
 		<BaseLayout>
 			<VStack space={4}>
@@ -83,9 +128,16 @@ const CreateGroup = () => {
 							color: 'black',
 						}}
 					>
-						Group Nae
+						Group Name
 					</FormControl.Label>
-					<Input variant="outline" rounded="full" size="lg" borderColor="black" />
+					<Input
+						variant="outline"
+						rounded="full"
+						size="lg"
+						borderColor="black"
+						value={groupName}
+						onChangeText={(text) => setGroupName(text)}
+					/>
 				</Box>
 
 				<Box mt={3}>
@@ -98,16 +150,16 @@ const CreateGroup = () => {
 					</FormControl.Label>
 					<ScrollView horizontal showsHorizontalScrollIndicator={false}>
 						<HStack space={2}>
-							{type.map((item, index) => (
+							{type.map((item) => (
 								<Button
 									key={item.value}
 									w="100px"
 									variant="subtle"
 									colorScheme="purple"
 									rounded="full"
-									onPress={() => toggleSelection(item.value)}
+									onPress={() => selectType(item.value)}
 									borderColor={
-										selectedValue === item.value ? 'purple.500' : 'purple.100'
+										groupType === item.value ? 'purple.500' : 'purple.100'
 									}
 									borderWidth={1}
 								>
@@ -126,7 +178,13 @@ const CreateGroup = () => {
 					>
 						Group Description
 					</FormControl.Label>
-					<TextArea borderColor="black" rounded="xl" h={20} />
+					<TextArea
+						borderColor="black"
+						rounded="xl"
+						h={20}
+						value={groupDescription}
+						onChangeText={(desc) => setGroupDescription(desc)}
+					/>
 				</Box>
 
 				<Box>
@@ -138,7 +196,7 @@ const CreateGroup = () => {
 						Select Members
 					</FormControl.Label>
 					<HStack space={2}>
-						{selectedMembers.map((member) => (
+						{users.map((user) => (
 							<IconButton
 								colorScheme="indigo"
 								variant="subtle"
@@ -147,13 +205,15 @@ const CreateGroup = () => {
 								rounded="full"
 								_icon={{
 									as: MaterialCommunityIcons,
-									name: `${member.sex == 'male' ? 'face-man' : 'face-woman'}`,
+									name: `${user.gender == 'male' ? 'face-man' : 'face-woman'}`,
 								}}
 								borderColor={
-									selectedValue === member.id ? 'purple.500' : 'purple.100'
+									selectedMember.includes(user.user_id)
+										? 'purple.500'
+										: 'purple.100'
 								}
 								borderWidth={1}
-								onPress={() => toggleSelection(member.id)}
+								onPress={() => selectMembers(user.user_id)}
 							/>
 						))}
 					</HStack>
@@ -167,6 +227,7 @@ const CreateGroup = () => {
 						_text={{
 							fontWeight: 'bold',
 						}}
+						onPress={() => registerGroup()}
 					>
 						Create Group
 					</Button>
@@ -177,6 +238,7 @@ const CreateGroup = () => {
 						_text={{
 							fontWeight: 'bold',
 						}}
+						onPress={() => navigation.goBack()}
 					>
 						Cancel
 					</Button>

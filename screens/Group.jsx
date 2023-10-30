@@ -1,9 +1,46 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import BaseLayout from '../components/BaseLayout';
 import { Box, Center, Flex, Pressable, ScrollView, Text, Stack } from 'native-base';
 import { Icon } from '@rneui/base';
-import { groups } from '../DummyData';
+import { supabase } from '../lib/supabase';
+import { useFocusEffect } from '@react-navigation/native';
+
 const Group = ({ navigation }) => {
+	const [groups, setGroups] = useState();
+	const [allExpense, setAllExpenses] = useState();
+
+	const getAllGroups = async () => {
+		const { data, error } = await supabase.from('groups').select('*');
+
+		if (data) {
+			setGroups(data);
+		}
+
+		if (error) {
+			console.log(error);
+		}
+	};
+
+	// fetch group everytime the view group open
+	useFocusEffect(
+		useCallback(() => {
+			getAllGroups();
+			getAllExpense();
+		}, [])
+	);
+
+	const getAllExpense = async () => {
+		const { data, err } = await supabase.from('expenses').select('*');
+
+		if (data) {
+			console.log(data);
+		}
+
+		if (err) {
+			console.log(err);
+		}
+	};
+
 	return (
 		<BaseLayout bgColor="purple.200">
 			<Box safeAreaTop={true}>
@@ -38,9 +75,9 @@ const Group = ({ navigation }) => {
 
 				<ScrollView horizontal={true} showsHorizontalScrollIndicator={false} mt={4}>
 					<Stack direction="row" space={2}>
-						{groups.map((group, i) => (
+						{groups?.map((group) => (
 							<Pressable
-								key={group.id}
+								key={group.group_id}
 								bg="white"
 								rounded="xl"
 								shadow={1}
@@ -48,7 +85,10 @@ const Group = ({ navigation }) => {
 									bg: 'light.200',
 								}}
 								onPress={() =>
-									navigation.navigate('ViewGroup', { title: group.name })
+									navigation.navigate('ViewGroup', {
+										title: group.group_name,
+										data: group,
+									})
 								}
 							>
 								<Box>
@@ -58,13 +98,14 @@ const Group = ({ navigation }) => {
 										_text={{
 											fontSize: 'lg',
 											fontWeight: 'bold',
+											textAlign: 'center',
 										}}
 									>
-										{group.name}
-										<Text>{group.totalBill} bills</Text>
+										{group.group_name}
+										<Text>{group.totalBill ?? 'not exist'} bills</Text>
 										<Text>
-											{group.totalMember}{' '}
-											{group.totalMember > 1 ? 'members' : 'member'}
+											{group.totalMember ?? 'not exist'}{' '}
+											{/* {group.totalMember > 1 ? 'members' : 'member'} */}
 										</Text>
 									</Center>
 								</Box>
@@ -92,9 +133,9 @@ const Group = ({ navigation }) => {
 
 				<ScrollView horizontal={true} showsHorizontalScrollIndicator={false} mt={4}>
 					<Stack direction="row" space={2}>
-						{groups.map((group, i) => (
+						{groups?.map((group) => (
 							<Pressable
-								key={group.id}
+								key={group.group_id}
 								bg="white"
 								rounded="xl"
 								shadow={1}
@@ -109,12 +150,13 @@ const Group = ({ navigation }) => {
 										_text={{
 											fontSize: 'lg',
 											fontWeight: 'bold',
+											textAlign: 'center',
 										}}
 									>
-										{group.name}
-										<Text>{group.totalBill} bills</Text>
+										{group.group_name ?? 'asdas'}
+										<Text>{group.totalBill ?? 'asdasd'} bills</Text>
 										<Text>
-											{group.totalMember}{' '}
+											{group.totalMember ?? 'asdasd'}{' '}
 											{group.totalMember > 1 ? 'members' : 'member'}
 										</Text>
 									</Center>
