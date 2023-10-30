@@ -69,7 +69,7 @@ const Home = () => {
 	}, []);
 
 	return (
-		<BaseLayout bgColor="purple.200">
+		<BaseLayout>
 			<Box safeAreaTop={true}>
 				<Box>
 					<Heading>Hello {currentUser?.username}</Heading>

@@ -1,20 +1,55 @@
 import { Box, Flex, Heading, Text, FlatList, Button } from 'native-base';
 import { Icon } from '@rneui/base';
 import BaseLayout from '../components/BaseLayout';
-import { activities } from '../DummyData';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { useLogin } from '../context/LoginProvider';
+import { RefreshControl } from 'react-native';
 
 function Activities() {
+	const [activities, setActivities] = useState([]);
+	const [refreshing, setRefreshing] = useState(false);
+
+	const { userDetails } = useLogin();
+
+	useEffect(() => {
+		fetchActivities();
+		console.log('userDetails ==========>', userDetails);
+	}, []);
+
+	const onRefresh = () => {
+		setRefreshing(true);
+		fetchActivities();
+		setRefreshing(false);
+	};
+
+	async function fetchActivities() {
+		const { data, error } = await supabase.from('activities').select();
+
+		if (data) {
+			console.log(data);
+			setActivities(data);
+		}
+
+		if (error) {
+			console.log(error);
+		}
+	}
+
 	return (
-		<BaseLayout bgColor="purple.200">
+		<BaseLayout>
 			<Flex mb={20} safeAreaTop={true}>
 				<Flex alignItems="start" alignContent="center">
 					<Heading>Activities</Heading>
 				</Flex>
 
 				<FlatList
+					refreshControl={
+						<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+					}
 					mt={5}
 					data={activities}
-					renderItem={({ item }) => (
+					renderItem={({ item: activity }) => (
 						<Flex
 							direction="row"
 							rounded="lg"
@@ -24,12 +59,12 @@ function Activities() {
 							my={1}
 						>
 							<Flex direction="row" alignItems="center" justifyContent="center" p={4}>
-								<ActivityIcon type={item.type} />
+								<ActivityIcon type={activity.activity_type} />
 							</Flex>
-							<TransactionDetails activity={item} />
+							<TransactionDetails activity={activity} />
 						</Flex>
 					)}
-					keyExtractor={(item) => item.id}
+					keyExtractor={(activity) => activity.activity_id}
 					showsVerticalScrollIndicator={false}
 				/>
 			</Flex>
@@ -46,16 +81,14 @@ function TransactionDetails({ activity }) {
 		console.log('Friend request rejected');
 	};
 
-	switch (activity.type) {
+	switch (activity.activity_type) {
 		case 'transaction':
 			return (
 				<Box>
 					<Text fontSize="lg" fontWeight="bold" color="green.800">
-						Successful !
+						{activity.status === 'success' ? 'Successful !' : 'Pending'}
 					</Text>
-					<Text>
-						Transaction amount of ${activity.amount} to {activity.transferTo}
-					</Text>
+					<Text>{activity.activity_description}</Text>
 				</Box>
 			);
 		case 'group':
@@ -69,13 +102,13 @@ function TransactionDetails({ activity }) {
 					</Text>
 				</Box>
 			);
-		case 'group-request':
+		case 'group_request':
 			return (
 				<Box>
 					<Text fontSize="lg" fontWeight="bold" color="green.800">
 						Group Request
 					</Text>
-					<Text>You're requested to join Room 3A-2</Text>
+					<Text>{activity.activity_description}</Text>
 					<Button.Group space={2}>
 						<Button
 							variant="subtle"
@@ -125,7 +158,7 @@ function ActivityIcon({ type }) {
 			);
 		case 'group':
 			return <Icon name="user-check" type="feather" color="black" size={36} />;
-		case 'group-request':
+		case 'group_request':
 			return <Icon name="users" type="feather" color="black" size={36} />;
 		default:
 			return <Icon name="check-circle" type="feather" color="black" size={36} />;

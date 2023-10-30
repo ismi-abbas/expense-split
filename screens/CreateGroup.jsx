@@ -1,5 +1,4 @@
 import {
-	Text,
 	Box,
 	Heading,
 	Input,
@@ -10,7 +9,6 @@ import {
 	VStack,
 	TextArea,
 	IconButton,
-	Toast,
 	useToast,
 } from 'native-base';
 import React, { useEffect, useState } from 'react';

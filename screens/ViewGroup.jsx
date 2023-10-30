@@ -17,7 +17,7 @@ const ViewGroup = ({ route, navigation }) => {
 	});
 
 	return (
-		<BaseLayout bgColor="purple.200">
+		<BaseLayout>
 			<Box
 				_text={{
 					fontSize: '2xl',

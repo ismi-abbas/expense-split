@@ -42,7 +42,7 @@ const Group = ({ navigation }) => {
 	};
 
 	return (
-		<BaseLayout bgColor="purple.200">
+		<BaseLayout>
 			<Box safeAreaTop={true}>
 				<Box>
 					<Text fontSize="2xl" fontWeight="bold">

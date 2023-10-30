@@ -30,7 +30,7 @@ const AddBill = () => {
 	};
 
 	return (
-		<BaseLayout bgColor="purple.200">
+		<BaseLayout>
 			<Box safeAreaTop={true}>
 				<View>
 					<Heading textAlign="center">Create a bill</Heading>
