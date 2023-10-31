@@ -8,7 +8,7 @@ import { getData } from '../lib/methods';
 import { useLogin } from '../context/LoginProvider';
 
 const Group = ({ navigation }) => {
-	const { session, isLoggedIn, userDetails } = useLogin();
+	const { userDetails, setUserDetails, isLoggedIn } = useLogin();
 	const [groups, setGroups] = useState([]);
 	const [amountOwe, setAmountOwe] = useState();
 	const [amountOwed, setAmountOwed] = useState();
@@ -16,19 +16,22 @@ const Group = ({ navigation }) => {
 	const [isHidden, setIsHidden] = useState(false);
 
 	useEffect(() => {
+		setCurrentUser(userDetails);
+	}, []);
+
+	useEffect(() => {
 		const fetchData = async () => {
-			setCurrentUser(userDetails);
 			await getAmountOwe();
 			await getGroupsInfo();
 			await getUserExpense();
 			await getUserExpense();
 		};
 		fetchData();
-	}, [userDetails]);
+	}, [currentUser]);
 
 	useFocusEffect(
 		useCallback(() => {
-			getGroupsInfo().then((_) => console.log(_));
+			getGroupsInfo();
 		}, [])
 	);
 

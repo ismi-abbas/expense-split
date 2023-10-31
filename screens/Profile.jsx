@@ -13,28 +13,21 @@ import {
 } from 'native-base';
 import { useLogin } from '../context/LoginProvider';
 import BaseLayout from '../components/BaseLayout';
-import { getData, truncate } from '../lib/methods';
+import { truncate } from '../lib/methods';
 import { Icon } from '@rneui/base';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Profile = () => {
-	const { setIsLoggedIn } = useLogin();
+	const { setIsLoggedIn, userDetails } = useLogin();
 
 	const [session, setSession] = useState(null);
 	const [loading, setLoading] = useState(true);
-	const [username, setUsername] = useState('');
-	const [website, setWebsite] = useState('');
-	const [avatarUrl, setAvatarUrl] = useState('');
-	const [phoneNumber, setPhoneNumber] = useState('');
-	const [address, setAddress] = useState('');
-	const [fullName, setFullName] = useState('');
-	const [email, setEmail] = useState('');
-	const [userId, setUserId] = useState('');
+	const [currentUser, setCurrentUser] = useState();
 
 	useEffect(() => {
-		getUserProfile();
+		setCurrentUser(userDetails);
 	}, []);
 
 	const logout = async () => {
@@ -46,13 +39,6 @@ const Profile = () => {
 		}
 	};
 
-	const getUserProfile = async () => {
-		const data = await getData('userDetails');
-		setUserId(data.id);
-
-		getProfile();
-	};
-
 	const changePassword = () => {
 		console.log('Password changed');
 	};
@@ -60,35 +46,6 @@ const Profile = () => {
 	const updateBankDetails = () => {
 		console.log('Bank details updated');
 	};
-
-	async function getProfile() {
-		try {
-			setLoading(true);
-			const { data, error, status } = await supabase
-				.from('users')
-				.select(`username, email, address, role_id, phone_number`)
-				.eq('id', userId)
-				.single();
-
-			if (error && status !== 406) {
-				throw error;
-			}
-
-			if (data) {
-				setUsername(data.username);
-				setPhoneNumber(data.phone_number);
-				setEmail(data.email);
-				setAddress(data.address);
-			}
-		} catch (error) {
-			if (error) {
-				console.log(error.message);
-			}
-		} finally {
-			setLoading(false);
-		}
-	}
-
 	async function updateProfile({ username, website, avatar_url }) {
 		try {
 			setLoading(true);
@@ -140,8 +97,12 @@ const Profile = () => {
 					</Flex>
 
 					<HStack w="full" h={20} alignItems="center" justifyContent="center" space={4}>
-						<Icon size={50} name="face-man" type="material-community" />
-						<Heading size="sm">{fullName}</Heading>
+						<Icon
+							size={50}
+							name={currentUser?.gender === 'male' ? 'face-man' : 'face-woman'}
+							type="material-community"
+						/>
+						<Heading size="lg">{currentUser?.username}</Heading>
 					</HStack>
 
 					<VStack space={4} w="300px">
@@ -161,7 +122,7 @@ const Profile = () => {
 									variant="rounded"
 									keyboardType="default"
 									type="text"
-									value={email}
+									value={currentUser?.email}
 									onChangeText={(value) => console.log(value)}
 								/>
 							</VStack>
@@ -182,7 +143,8 @@ const Profile = () => {
 									variant="rounded"
 									keyboardType="default"
 									type="text"
-									value={phoneNumber}
+									value={currentUser?.phone_number}
+									onChangeText={(text) => console.log(text)}
 								/>
 							</VStack>
 						</FormControl>
@@ -202,7 +164,7 @@ const Profile = () => {
 									variant="rounded"
 									keyboardType="default"
 									type="text"
-									value={truncate(address, 20)}
+									// value={truncate(currentUser?.address, 20)}
 								/>
 							</VStack>
 						</FormControl>

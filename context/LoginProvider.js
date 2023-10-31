@@ -8,7 +8,11 @@ const LoginContext = createContext();
 
 const LoginProvider = ({ children }) => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
-	const [userDetails, setUserDetails] = useState(null);
+	const [userDetails, setUserDetails] = useState();
+
+	useEffect(() => {
+		console.log('hereeeeeeeeeeeeeeee', userDetails);
+	}, [userDetails]);
 
 	return (
 		<LoginContext.Provider value={{ isLoggedIn, setIsLoggedIn, userDetails, setUserDetails }}>

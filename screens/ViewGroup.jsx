@@ -52,13 +52,8 @@ const ViewGroup = ({ route, navigation }) => {
 						{data.group_members.map((u, i) => {
 							const iconName = u.gender === 'male' ? 'face-man' : 'face-woman';
 							return (
-								<Box>
-									<Icon
-										key={i}
-										size={40}
-										name={iconName}
-										type="material-community"
-									/>
+								<Box key={i}>
+									<Icon size={40} name={iconName} type="material-community" />
 									<Text>{u.username}</Text>
 								</Box>
 							);

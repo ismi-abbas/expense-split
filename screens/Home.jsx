@@ -6,22 +6,22 @@ import { supabase } from '../lib/supabase';
 import { useLogin } from '../context/LoginProvider';
 
 const Home = () => {
-	const { userDetails } = useLogin();
+	const { userDetails, isLoggedIn } = useLogin();
 	const [amountOwe, setAmountOwe] = useState();
 	const [amountOwed, setAmountOwed] = useState();
 	const [friendList, setFriendList] = useState();
 	const [currentUser, setCurrentUser] = useState();
 
 	useEffect(() => {
+		setCurrentUser(userDetails);
+	}, []);
+
+	useEffect(() => {
 		const fetchData = async () => {
 			await getUserExpense();
 		};
-
-		if (userDetails) {
-			setCurrentUser(userDetails);
-			fetchData();
-		}
-	}, [userDetails]);
+		fetchData();
+	}, [currentUser]);
 
 	const getUserExpense = async () => {
 		try {
