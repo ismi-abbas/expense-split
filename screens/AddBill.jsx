@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { groups } from '../DummyData';
 import BaseLayout from '../components/BaseLayout';
 import {
@@ -16,10 +16,53 @@ import {
 	Button,
 } from 'native-base';
 import { Icon } from '@rneui/base';
+import { supabase } from '../lib/supabase';
+import { G } from 'react-native-svg';
 
 const AddBill = () => {
-	const [service, setService] = useState('');
+	const [splitType, setSplitType] = useState('');
 	const [isSelected, setIsSelected] = useState();
+	const [groupList, setGroupList] = useState([]);
+	const [selectedGroup, setSelectedGroup] = useState();
+	const [groupMember, setGroupMember] = useState([]);
+	const [itemName, setItemName] = useState('');
+	const [itemPrice, setItemPrice] = useState(0);
+
+	const loadAllGroup = async (groupId) => {
+		const { data, error } = await supabase.from('groups').select('*');
+
+		if (data) {
+			setGroupList(data);
+			console.log(data);
+		}
+	};
+
+	const handleSplit = (type) => {
+		setSplitType(type);
+
+		if (type === 'equal') {
+			console.log('Split equally');
+		} else {
+			console.log('Split inequally');
+		}
+		// load popup with group members here
+		// handle how the amount should be split
+	};
+
+	const loadGroupMembers = async (groupId) => {
+		const { data, error } = await supabase
+			.from('group_members')
+			.select('')
+			.eq('group_id', groupId);
+		if (data) {
+			console.log(data);
+			setGroupMember(data);
+		}
+	};
+
+	useEffect(() => {
+		loadAllGroup();
+	}, []);
 
 	const cancelCreate = () => {
 		console.log('cancelCreate');
@@ -46,11 +89,11 @@ const AddBill = () => {
 							alignItems="center"
 							justifyContent="flex-start"
 						>
-							{groups.map((group) => (
+							{groupList.map((group) => (
 								<Pressable
 									mr={2}
 									mb={2}
-									key={group.id}
+									key={group.group_id}
 									_focus={{
 										bg: 'light.50',
 										borderWidth: 4,
@@ -61,10 +104,13 @@ const AddBill = () => {
 									_pressed={{
 										bg: 'purple.300',
 									}}
+									onPress={() => {
+										setSelectedGroup(group);
+									}}
 								>
 									<Center height={100} w={100} rounded="2xl" p={2}>
 										<Text fontSize="md" fontWeight="bold" textAlign="center">
-											{group.name}
+											{group.group_name}
 										</Text>
 									</Center>
 								</Pressable>
@@ -84,6 +130,7 @@ const AddBill = () => {
 									/>
 								</Box>
 								<Input
+									type="text"
 									borderColor="purple.800"
 									focusOutlineColor="purple.700"
 									size="md"
@@ -91,6 +138,9 @@ const AddBill = () => {
 									placeholder="Enter item"
 									colorScheme="purple"
 									ml={4}
+									placeholderTextColor="black"
+									value={itemName}
+									onChange={(name) => setItemName(name)}
 								/>
 							</Flex>
 
@@ -104,6 +154,7 @@ const AddBill = () => {
 									/>
 								</Box>
 								<Input
+									type="number"
 									borderColor="purple.800"
 									focusOutlineColor="purple.700"
 									size="md"
@@ -111,8 +162,10 @@ const AddBill = () => {
 									placeholder="Price"
 									keyboardType="numeric"
 									colorScheme="purple"
-									underlineColorAndroid="purple.400"
 									ml={4}
+									placeholderTextColor="black"
+									value={itemPrice}
+									onChange={(price) => setItemName(price)}
 								/>
 							</Flex>
 
@@ -131,7 +184,7 @@ const AddBill = () => {
 										borderColor="purple.800"
 										colorScheme="purple"
 										variant="rounded"
-										selectedValue={service}
+										selectedValue={splitType}
 										placeholder="Choose type"
 										_selectedItem={{
 											bg: 'teal.200',
@@ -139,10 +192,10 @@ const AddBill = () => {
 										}}
 										mt={1}
 										size="md"
-										onValueChange={(itemValue) => setService(itemValue)}
+										onValueChange={(itemValue) => handleSplit(itemValue)}
 									>
 										<Select.Item label="Split equally" value="equal" />
-										<Select.Item label="Web Development" value="web" />
+										<Select.Item label="Split inequally" value="inequal" />
 									</Select>
 								</Box>
 							</Flex>

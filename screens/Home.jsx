@@ -1,72 +1,91 @@
 import React, { useEffect, useState } from 'react';
 import BaseLayout from '../components/BaseLayout';
-import { Text, Heading, Box, Flex, VStack, Button, Spacer, CircularProgress } from 'native-base';
-import { userDetails } from '../DummyData';
+import { Text, Heading, Box, Flex, VStack, Button, Spacer } from 'native-base';
 import { Icon } from '@rneui/base';
 import { supabase } from '../lib/supabase';
 import { useLogin } from '../context/LoginProvider';
-import { getData } from '../lib/methods';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Home = () => {
-	const { session } = useLogin();
+	const { userDetails } = useLogin();
 	const [amountOwe, setAmountOwe] = useState();
 	const [amountOwed, setAmountOwed] = useState();
-	const [friendOwe, setFriendOwe] = useState([]);
-	const [friendListOwe, setFriendListOwe] = useState();
-	const [allUser, setAllUser] = useState([]);
+	const [friendList, setFriendList] = useState();
 	const [currentUser, setCurrentUser] = useState();
 
-	const getAllUser = async () => {
-		let { data, error } = await supabase.from('users').select();
+	useEffect(() => {
+		const fetchData = async () => {
+			await getUserExpense();
+		};
 
-		if (data) {
-			setAllUser(data);
+		if (userDetails) {
+			setCurrentUser(userDetails);
+			fetchData();
 		}
-
-		const userData = await getData('userDetails');
-		let curr = data.filter((d) => d.user_id === userData.user_id);
-		console.log(curr[0]);
-		setCurrentUser(curr[0]);
-
-		if (error) {
-			throw error;
-		}
-	};
+	}, [userDetails]);
 
 	const getUserExpense = async () => {
 		try {
-			let { data: userExpense } = await supabase.from('expense_participants').select();
-			let friendList = [];
-			if (userExpense) {
-				for (let expense of userExpense) {
-					if (expense.user_id !== 'e291c9c9-33c4-4c52-be8b-b2ca5d0ce58b') {
-						friendList.push(expense);
-					}
+			let { data: allExpenses, error } = await supabase.from('expenses').select(
+				`
+				expense_id,
+				group_id,
+				paid_by,
+				status,
+				total_amount,
+				created_by,
+				expense_type,
+				expense_participants(participant_id, expense_id, status, created_at, amount, pending_from)
+				`
+			);
+
+			let { data: myGroup, error: groupErr } = await supabase
+				.from('group_members')
+				.select('group_id')
+				.eq('user_id', currentUser?.user_id);
+
+			if (allExpenses && myGroup) {
+				const filteredExpenses = allExpenses.filter((expense) =>
+					myGroup.some((group) => group.group_id === expense.group_id)
+				);
+				let amountOwed = 0;
+				let amountOwe = 0;
+
+				let friends = [];
+				filteredExpenses?.forEach((expense) => {
+					expense.expense_participants.forEach((participant) => {
+						if (participant.status === 'unsettled') {
+							if (participant.pending_from !== currentUser?.user_id) {
+								friends.push(participant);
+								amountOwed += participant.amount;
+							} else {
+								amountOwe += participant.amount;
+							}
+						}
+					});
+				});
+
+				for (const f of friends) {
+					const { data: userData, error } = await supabase
+						.from('users')
+						.select()
+						.eq('user_id', f.pending_from)
+						.single();
+
+					f.username = userData.username;
 				}
-				const totalAmount = userExpense
-					.filter(
-						(exp) =>
-							exp.user_id !== 'e291c9c9-33c4-4c52-be8b-b2ca5d0ce58b' &&
-							exp.status.toLowerCase() === 'unsettled'
-					)
-					.reduce((total, exp) => total + exp.amount, 0);
-				setAmountOwe(totalAmount);
+				console.log(friends);
+				setFriendList(friends);
+				setAmountOwed(amountOwed);
+				setAmountOwe(amountOwe);
 			}
-			friendList.map((friendList) => {
-				friendList.user_name = allUser.find(
-					(friend) => friend.user_id === friendList.user_id
-				)?.username;
-			});
-			setFriendListOwe(friendList);
+
+			if (error) {
+				console.log(error);
+			}
 		} catch (error) {
 			console.log(error);
 		}
 	};
-
-	useEffect(() => {
-		if (getUserExpense()) getAllUser();
-	}, []);
 
 	return (
 		<BaseLayout>
@@ -88,7 +107,7 @@ const Home = () => {
 							You Owe
 						</Text>
 						<Text fontWeight="extrabold" fontSize="3xl">
-							$ {amountOwe ? amountOwe : '0'}
+							$ {amountOwe ? amountOwe.toFixed(2) : 0}
 						</Text>
 					</Box>
 					<Spacer />
@@ -107,7 +126,7 @@ const Home = () => {
 							You're owed
 						</Text>
 						<Text fontWeight="extrabold" fontSize="3xl">
-							${amountOwed ? amountOwed : '0'}
+							${amountOwed ? amountOwed.toFixed(2) : 0}
 						</Text>
 					</Box>
 				</Flex>
@@ -133,18 +152,19 @@ const Home = () => {
 						py={2}
 						overflow="hidden"
 					>
-						{friendListOwe?.map((friend) => (
+						{friendList?.map((friend) => (
 							<Flex
 								direction="row"
-								key={friend.user_id}
+								key={friend.pending_from}
 								p={2}
 								alignItems="center"
 								justifyContent="space-evenly"
 								rounded="lg"
 								w="full"
-								borderWidth={1}
+								borderBottomWidth={1}
+								borderBottomColor="gray.200"
 							>
-								<Icon size={50} name="face-man" type="material-community" />
+								<Icon size={30} name="face-man" type="material-community" />
 								<Flex
 									direction="row"
 									alignItems="center"
@@ -152,12 +172,12 @@ const Home = () => {
 								>
 									<Flex ml={2} justifyContent="start" w="100px">
 										<Text fontSize="lg" fontWeight="medium">
-											{friend.user_name}
+											{friend.username}
 										</Text>
 									</Flex>
 									<Flex ml={2} justifyContent="start" w="auto">
 										<Text fontSize="lg" fontWeight="medium">
-											Owes you ${friend.amount}
+											Owes you RM{friend.amount.toFixed(2)}
 										</Text>
 									</Flex>
 								</Flex>

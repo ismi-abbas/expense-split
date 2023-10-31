@@ -1,20 +1,32 @@
 import React, { useEffect } from 'react';
-import { Box, Stack, Flex, HStack, VStack, Heading, Text, View, FlatList } from 'native-base';
+import { Box, Stack, Flex, HStack, VStack, Heading, Text, FlatList } from 'native-base';
 import { Icon } from '@rneui/themed';
 import MonthlyDetails from '../components/MonthlyDetails';
 import BaseLayout from '../components/BaseLayout';
 import { monthlyBills, users, groupExpenseDetails } from '../DummyData';
 import { formatDate } from '../lib/methods';
+import { supabase } from '../lib/supabase';
 
 const ViewGroup = ({ route, navigation }) => {
-	const { title, data } = route.params;
-	expenseDetails = 'Graduation trip yoohoooooo ';
-	createdBy = 'Amelia';
-	createdDate = Date.now();
+	const { title, data, creator } = route.params;
 
 	useEffect(() => {
-		console.log('data =====>', data);
+		getMemberDetails(data.group_members);
 	});
+
+	const getMemberDetails = async (data) => {
+		console.log({ data });
+		for (let i = 0; i < data.length; i++) {
+			const user = data[i];
+			const { data: details, error } = await supabase
+				.from('users')
+				.select('username, gender, phone_number')
+				.eq('user_id', user.user_id);
+
+			user.username = details[0].username;
+			user.gender = details[0].gender;
+		}
+	};
 
 	return (
 		<BaseLayout>
@@ -33,19 +45,22 @@ const ViewGroup = ({ route, navigation }) => {
 			{/* Group Info */}
 			<Text>{data.group_description}</Text>
 			<Text>Group created on {formatDate(data.created_at)}</Text>
-			<Text>Group created by {data.created_by}</Text>
+			<Text>Group created by {creator}</Text>
 			<Box marginY={2}>
 				<Stack direction="row" alignItems="center" justifyContent="space-between">
-					<Stack direction="row" alignSelf="center">
-						{users.map((u) => {
-							const iconName = u.sex === 'male' ? 'face-man' : 'face-woman';
+					<Stack direction="row" alignSelf="center" space={2}>
+						{data.group_members.map((u, i) => {
+							const iconName = u.gender === 'male' ? 'face-man' : 'face-woman';
 							return (
-								<Icon
-									key={u.id}
-									size={40}
-									name={iconName}
-									type="material-community"
-								/>
+								<Box>
+									<Icon
+										key={i}
+										size={40}
+										name={iconName}
+										type="material-community"
+									/>
+									<Text>{u.username}</Text>
+								</Box>
 							);
 						})}
 					</Stack>

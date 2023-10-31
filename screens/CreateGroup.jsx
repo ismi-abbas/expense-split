@@ -10,11 +10,14 @@ import {
 	TextArea,
 	IconButton,
 	useToast,
+	Text,
+	Flex,
 } from 'native-base';
 import React, { useEffect, useState } from 'react';
 import BaseLayout from '../components/BaseLayout';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
+import { useLogin } from '../context/LoginProvider';
 
 const type = [
 	{
@@ -41,6 +44,7 @@ const CreateGroup = ({ navigation }) => {
 	const [groupType, setGroupType] = useState([]);
 	const [groupDescription, setGroupDescription] = useState('');
 	const [users, setUsers] = useState([]);
+	const { userDetails } = useLogin();
 
 	const toast = useToast();
 
@@ -82,8 +86,10 @@ const CreateGroup = ({ navigation }) => {
 				group_name: groupName,
 				group_description: groupDescription,
 				group_type: groupType,
+				created_by: userDetails.user_id,
 			})
-			.select();
+			.select()
+			.single();
 
 		if (groupData) {
 			const groupMembersData = selectedMember.map((memberId) => ({
@@ -133,6 +139,7 @@ const CreateGroup = ({ navigation }) => {
 						rounded="full"
 						size="lg"
 						borderColor="black"
+						bgColor="white"
 						value={groupName}
 						onChangeText={(text) => setGroupName(text)}
 					/>
@@ -150,6 +157,10 @@ const CreateGroup = ({ navigation }) => {
 						<HStack space={2}>
 							{type.map((item) => (
 								<Button
+									_text={{
+										fontSize: 'sm',
+										fontWeight: 'bold',
+									}}
 									key={item.value}
 									w="100px"
 									variant="subtle"
@@ -159,7 +170,7 @@ const CreateGroup = ({ navigation }) => {
 									borderColor={
 										groupType === item.value ? 'purple.500' : 'purple.100'
 									}
-									borderWidth={1}
+									borderWidth={2}
 								>
 									{item.name}
 								</Button>
@@ -177,9 +188,11 @@ const CreateGroup = ({ navigation }) => {
 						Group Description
 					</FormControl.Label>
 					<TextArea
+						size="md"
 						borderColor="black"
 						rounded="xl"
 						h={20}
+						bgColor="white"
 						value={groupDescription}
 						onChangeText={(desc) => setGroupDescription(desc)}
 					/>
@@ -193,28 +206,35 @@ const CreateGroup = ({ navigation }) => {
 					>
 						Select Members
 					</FormControl.Label>
-					<HStack space={2}>
-						{users.map((user) => (
-							<IconButton
-								colorScheme="indigo"
-								variant="subtle"
-								w={16}
-								h={16}
-								rounded="full"
-								_icon={{
-									as: MaterialCommunityIcons,
-									name: `${user.gender == 'male' ? 'face-man' : 'face-woman'}`,
-								}}
-								borderColor={
-									selectedMember.includes(user.user_id)
-										? 'purple.500'
-										: 'purple.100'
-								}
-								borderWidth={1}
-								onPress={() => selectMembers(user.user_id)}
-							/>
-						))}
-					</HStack>
+					<ScrollView horizontal showsHorizontalScrollIndicator={false}>
+						<HStack space={2}>
+							{users.map((user) => (
+								<Flex alignItems="center">
+									<IconButton
+										variant="subtle"
+										bgColor="white"
+										w={12}
+										h={12}
+										rounded="full"
+										_icon={{
+											as: MaterialCommunityIcons,
+											name: `${
+												user.gender == 'male' ? 'face-man' : 'face-woman'
+											}`,
+										}}
+										borderColor={
+											selectedMember.includes(user.user_id)
+												? 'purple.500'
+												: 'purple.100'
+										}
+										borderWidth={2}
+										onPress={() => selectMembers(user.user_id)}
+									/>
+									<Text fontSize="xs">{user.username}</Text>
+								</Flex>
+							))}
+						</HStack>
+					</ScrollView>
 				</Box>
 
 				<Button.Group direction="column" mt={6} alignItems="center">

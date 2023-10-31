@@ -42,14 +42,14 @@ const Login = ({ navigation }) => {
 				setLoading(true);
 				const { data, error, status } = await supabase
 					.from('users')
-					.select('user_id, email, password')
+					.select()
 					.eq('email', email)
 					.single();
 
 				if (status === 200) {
 					const isPasswordCorrect = comparePasswords(password, data.password);
 					if (isPasswordCorrect) {
-						await storeData('userDetails', data);
+						setUserDetails(data);
 						setLoading(false);
 						setIsLoggedIn(true);
 					} else {
@@ -84,7 +84,7 @@ const Login = ({ navigation }) => {
 	};
 
 	return (
-		<BaseLayout bgColor="light.50">
+		<BaseLayout isWhite>
 			<Box safeAreaTop={true} flex={1} justifyContent="center" mx={5}>
 				<Box alignItems="center">
 					<Box w="full">

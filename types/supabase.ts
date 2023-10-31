@@ -52,24 +52,24 @@ export interface Database {
 					created_at: string | null;
 					expense_id: string | null;
 					participant_id: string;
+					pending_from: string | null;
 					status: string | null;
-					user_id: string | null;
 				};
 				Insert: {
 					amount?: number | null;
 					created_at?: string | null;
 					expense_id?: string | null;
 					participant_id?: string;
+					pending_from?: string | null;
 					status?: string | null;
-					user_id?: string | null;
 				};
 				Update: {
 					amount?: number | null;
 					created_at?: string | null;
 					expense_id?: string | null;
 					participant_id?: string;
+					pending_from?: string | null;
 					status?: string | null;
-					user_id?: string | null;
 				};
 				Relationships: [
 					{
@@ -79,8 +79,8 @@ export interface Database {
 						referencedColumns: ['expense_id'];
 					},
 					{
-						foreignKeyName: 'expense_participants_user_id_users_user_id_fk';
-						columns: ['user_id'];
+						foreignKeyName: 'expense_participants_pending_from_fkey';
+						columns: ['pending_from'];
 						referencedRelation: 'users';
 						referencedColumns: ['user_id'];
 					},
@@ -94,6 +94,7 @@ export interface Database {
 					expense_id: string;
 					expense_type: string | null;
 					group_id: string | null;
+					paid_by: string | null;
 					status: string | null;
 					total_amount: number | null;
 				};
@@ -104,6 +105,7 @@ export interface Database {
 					expense_id?: string;
 					expense_type?: string | null;
 					group_id?: string | null;
+					paid_by?: string | null;
 					status?: string | null;
 					total_amount?: number | null;
 				};
@@ -114,6 +116,7 @@ export interface Database {
 					expense_id?: string;
 					expense_type?: string | null;
 					group_id?: string | null;
+					paid_by?: string | null;
 					status?: string | null;
 					total_amount?: number | null;
 				};
@@ -129,6 +132,12 @@ export interface Database {
 						columns: ['group_id'];
 						referencedRelation: 'groups';
 						referencedColumns: ['group_id'];
+					},
+					{
+						foreignKeyName: 'expenses_paid_by_fkey';
+						columns: ['paid_by'];
+						referencedRelation: 'users';
+						referencedColumns: ['user_id'];
 					},
 				];
 			};
@@ -299,7 +308,7 @@ export interface Database {
 			[_ in never]: never;
 		};
 		Enums: {
-			[_ in never]: never;
+			expense_status: 'settled' | 'unsettled';
 		};
 		CompositeTypes: {
 			[_ in never]: never;
