@@ -8,97 +8,79 @@ import { getData } from '../lib/methods';
 import { useLogin } from '../context/LoginProvider';
 
 const Group = ({ navigation }) => {
-	const { userDetails, setUserDetails, isLoggedIn } = useLogin();
+	const { userDetails } = useLogin();
 	const [groups, setGroups] = useState([]);
-	const [amountOwe, setAmountOwe] = useState();
-	const [amountOwed, setAmountOwed] = useState();
-	const [currentUser, setCurrentUser] = useState();
+	const [amountOwe, setAmountOwe] = useState(0);
+	const [amountOwed, setAmountOwed] = useState(0);
+	const [currentUser, setCurrentUser] = useState(null);
 	const [isHidden, setIsHidden] = useState(false);
 
 	useEffect(() => {
 		setCurrentUser(userDetails);
-	}, []);
-
-	useEffect(() => {
-		const fetchData = async () => {
-			await getAmountOwe();
-			await getGroupsInfo();
-			await getUserExpense();
-			await getUserExpense();
-		};
 		fetchData();
-	}, [currentUser]);
+	}, [userDetails]);
 
-	useFocusEffect(
-		useCallback(() => {
-			getGroupsInfo();
-		}, [])
-	);
+	const fetchData = async () => {
+		await getAmountOwe();
+		await getGroupsInfo();
+		await getUserExpense();
+	};
 
 	const getUserExpense = async () => {
-		try {
-			let { data: userExpense, error } = await supabase.from('expense_participants').select(`
-				participant_id,
-				expense_id,
-				status,
-				created_at,
-				amount,
-				pending_from,
-				users(username)
-			`);
+		const { data: userExpense, error } = await supabase
+			.from('expense_participants')
+			.select(
+				`participant_id, expense_id, status, created_at, amount, pending_from, users(username)`
+			);
 
-			if (error) {
-				console.log(error);
-			}
-			if (userExpense) {
-				const amountOwed = userExpense.reduce((acc, item) => {
-					if (item.pending_from !== currentUser.user_id && item.status === 'unsettled') {
-						return acc + item.amount;
-					} else {
-						return acc;
-					}
-				}, 0);
-
-				const amountOwe = userExpense.reduce((acc, item) => {
-					if (item.pending_from == currentUser.user_id && item.status === 'unsettled') {
-						return acc + item.amount;
-					} else {
-						return acc;
-					}
-				}, 0);
-
-				const friendListExpense = userExpense.filter(
-					(item) =>
-						item.pending_from !== currentUser.user_id && item.status === 'unsettled'
-				);
-				setAmountOwed(amountOwed);
-				setAmountOwe(amountOwe);
-			}
-		} catch (error) {
+		if (error) {
 			console.log(error);
+			return;
+		}
+
+		if (userExpense) {
+			const amountOwed = userExpense.reduce((acc, item) => {
+				if (item.pending_from !== currentUser?.user_id && item.status === 'unsettled') {
+					return acc + item.amount;
+				} else {
+					return acc;
+				}
+			}, 0);
+
+			const amountOwe = userExpense.reduce((acc, item) => {
+				if (item.pending_from === currentUser?.user_id && item.status === 'unsettled') {
+					return acc + item.amount;
+				} else {
+					return acc;
+				}
+			}, 0);
+
+			setAmountOwed(amountOwed);
+			setAmountOwe(amountOwe);
 		}
 	};
 
 	const getGroupsInfo = async () => {
-		const { data, error } = await supabase.from('groups').select(`
-			group_id,
-			group_name,
-			created_at,
-			group_description,
-			created_by,
-			group_type,
-			expenses(total_amount, description, expense_type, status, created_at, created_by),
-			group_members(user_id, role),
-			users(username, email, gender)
-		`);
+		try {
+			const { data, error } = await supabase
+				.from('groups')
+				.select(
+					`group_id, group_name, created_at, group_description, created_by, group_type, expenses(total_amount, description, expense_type, status, created_at, created_by), group_members(user_id, role), users(username, email, gender)`
+				);
 
-		const filteredGroups = data.filter((group) =>
-			group.group_members.some((member) => member.user_id === currentUser.user_id)
-		);
+			if (error) {
+				console.log(error);
+				return;
+			}
 
-		setGroups(filteredGroups);
+			const filteredGroups = data.filter((group) =>
+				group.group_members.some((member) => member.user_id === currentUser?.user_id)
+			);
 
-		if (error) {
+			if (filteredGroups) {
+				setGroups(filteredGroups);
+			}
+		} catch (error) {
 			console.log(error);
 		}
 	};
@@ -118,10 +100,10 @@ const Group = ({ navigation }) => {
 						Overall
 					</Text>
 					<Text fontSize="2xl" fontWeight="bold">
-						You are owed $ {amountOwed ? amountOwed.toFixed(2) : 0}
+						You are owed $ {amountOwed?.toFixed(2)}
 					</Text>
 					<Text fontSize="2xl" fontWeight="bold">
-						You owe $ {amountOwe ? amountOwe.toFixed(2) : 0}
+						You owe $ {amountOwe?.toFixed(2)}
 					</Text>
 				</Box>
 

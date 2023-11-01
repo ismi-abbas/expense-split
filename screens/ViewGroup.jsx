@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { Box, Stack, Flex, HStack, VStack, Heading, Text, FlatList } from 'native-base';
+import React, { useEffect, useState } from 'react';
+import { Box, Stack, Flex, HStack, VStack, Heading, Text, FlatList, Button } from 'native-base';
 import { Icon } from '@rneui/themed';
 import MonthlyDetails from '../components/MonthlyDetails';
 import BaseLayout from '../components/BaseLayout';
@@ -7,15 +7,41 @@ import { monthlyBills, users, groupExpenseDetails } from '../DummyData';
 import { formatDate } from '../lib/methods';
 import { supabase } from '../lib/supabase';
 
-const ViewGroup = ({ route, navigation }) => {
+const ViewGroup = ({ route }) => {
 	const { title, data, creator } = route.params;
+	const { expenses } = data;
+
+	const [allExpenses, setAllExpenses] = useState([]);
 
 	useEffect(() => {
-		getMemberDetails(data.group_members);
-	});
+		const fetchData = async () => {
+			await getMemberDetails(data.group_members);
+		};
+		fetchData();
+		categorizeExpensesByMonth(expenses);
+	}, []);
+
+	function categorizeExpensesByMonth(expenses) {
+		const categorizedExpenses = [];
+
+		expenses.forEach((expense) => {
+			const date = new Date(expense.created_at);
+			const month = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+			let found = categorizedExpenses.find((item) => item.month === month);
+
+			if (!found) {
+				found = { month, expenses: [] };
+				categorizedExpenses.push(found);
+			}
+
+			found.expenses.push(expense);
+		});
+
+		setAllExpenses(categorizedExpenses);
+	}
 
 	const getMemberDetails = async (data) => {
-		console.log({ data });
 		for (let i = 0; i < data.length; i++) {
 			const user = data[i];
 			const { data: details, error } = await supabase
@@ -113,9 +139,10 @@ const ViewGroup = ({ route, navigation }) => {
 					))}
 				</VStack>
 			</HStack>
+			<Button>Refresh</Button>
 			<FlatList
 				showsVerticalScrollIndicator={false}
-				data={monthlyBills}
+				data={allExpenses}
 				renderItem={({ item }) => <MonthlyDetails bill={item} />}
 			/>
 		</BaseLayout>

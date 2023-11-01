@@ -16,7 +16,7 @@ const RecordModal = ({ navigation, route }) => {
 	return (
 		<Center>
 			<Modal isOpen={true} onClose={closeModal}>
-				{record.type === 'settlement' ? (
+				{record.expense_type === 'settlement' ? (
 					<SettleMentLayout record={record} closeModal={closeModal} />
 				) : (
 					<RecordLayout record={record} closeModal={closeModal} settleUp={settleUp} />
@@ -30,7 +30,7 @@ const SettleMentLayout = ({ record, closeModal }) => {
 	return (
 		<Modal.Content maxWidth="400px" alignItems="center" py={10}>
 			<Stack direction="row" space={2}>
-				{record.type === 'settlement' ? (
+				{record.expense_type === 'settlement' ? (
 					<Icon
 						name="credit-card-check-outline"
 						type="material-community"
@@ -40,17 +40,17 @@ const SettleMentLayout = ({ record, closeModal }) => {
 					<></>
 				)}
 				<Heading size="md" alignSelf="center">
-					{record?.expenseTitle ? record.expenseTitle : 'Settlement'}
+					{record?.description ? record.description : 'Settlement'}
 				</Heading>
 			</Stack>
 			<Flex alignItems="center">
 				<Text fontSize="lg" fontWeight="medium">
-					$ {record.amount}
+					$ {record.total_amount}
 				</Text>
 
 				<Stack space={2} mt={4}>
-					<Text fontSize="md">Bill Creator: {record.createdBy}</Text>
-					<Text fontSize="md">Bill made on {formatDate(record.createdDate)}</Text>
+					<Text fontSize="md">Bill Creator: {record.created_by}</Text>
+					<Text fontSize="md">Bill made on {formatDate(record.created_at)}</Text>
 					<Text fontSize="md">Settle through: Visa Card</Text>
 				</Stack>
 			</Flex>
@@ -78,20 +78,20 @@ const RecordLayout = ({ record, closeModal, settleUp }) => {
 					<></>
 				)}
 				<Heading size="md" alignSelf="center">
-					{record?.expenseTitle ? record.expenseTitle : 'Settlement'}
+					{record?.description ? record.description : 'Settlement'}
 				</Heading>
 			</Stack>
 			<Flex alignItems="center">
 				<Text fontSize="lg" fontWeight="medium">
-					$ {record.amount}
+					$ {record.total_amount}
 				</Text>
 
 				<Stack space={2} mt={4}>
-					<Text fontSize="md">Bill Creator: {record.createdBy}</Text>
-					<Text fontSize="md">Bill Created on {formatDate(record.createdDate)}</Text>
+					<Text fontSize="md">Bill Creator: {record.created_by}</Text>
+					<Text fontSize="md">Bill Created on {formatDate(record.created_at)}</Text>
 					<Text fontSize="md">
 						Divided by 6, {''}
-						<Text color="red.500">you awe {record.amount}$</Text>
+						<Text color="red.500">you awe {record.total_amount}$</Text>
 					</Text>
 				</Stack>
 			</Flex>

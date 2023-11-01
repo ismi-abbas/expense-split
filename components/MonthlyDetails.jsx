@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
 import { Box, Text, Heading, VStack, Flex, Pressable, View, FlatList } from 'native-base';
-import { useModal } from '../context/ModalProvider';
-import RecordModal from './RecordModal';
 import { useNavigation } from '@react-navigation/native';
 
 const MonthlyDetails = ({ bill }) => {
 	const navigation = useNavigation();
 
-	const currentDate = new Date();
-	const year = currentDate.getFullYear();
-
-	const openRecordModal = record => {
+	const openRecordModal = (record) => {
 		navigation.navigate('Modal', { record: record });
 	};
 
@@ -25,16 +20,15 @@ const MonthlyDetails = ({ bill }) => {
 			bg="light.100"
 			paddingX={4}
 			paddingY={2}
-			rounded="xl">
+			rounded="xl"
+		>
 			<Box maxW="full" p={2}>
 				<Box>
-					<Heading size="sm">
-						{bill.month} {year}
-					</Heading>
+					<Heading size="sm">{bill.month}</Heading>
 				</Box>
 
 				<VStack space={2} mt={2}>
-					{bill.records.map((record, index) => {
+					{bill.expenses.map((record, index) => {
 						return (
 							<Pressable
 								key={index}
@@ -44,13 +38,22 @@ const MonthlyDetails = ({ bill }) => {
 								p={2}
 								_pressed={{
 									bg: 'light.100',
-								}}>
+								}}
+							>
 								<Flex direction="row" w="full" h="auto" alignItems="center">
-									<Flex bg="light.100" h={8} w={8} alignItems="center" justifyContent="center" rounded="lg" mr={4}>
-										<Text fontWeight="bold">{index}</Text>
+									<Flex
+										bg="light.100"
+										h={8}
+										w={8}
+										alignItems="center"
+										justifyContent="center"
+										rounded="lg"
+										mr={4}
+									>
+										<Text fontWeight="bold">{index + 1}</Text>
 									</Flex>
 									<Flex>
-										<Text fontSize={'md'}>{record.type === 'expense' ? record.expenseTitle : 'You paid'}</Text>
+										<Text fontSize={'md'}>{record.description}</Text>
 									</Flex>
 								</Flex>
 							</Pressable>

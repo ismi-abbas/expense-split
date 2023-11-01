@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { groups } from '../DummyData';
+import { useCallback, useEffect, useState } from 'react';
 import BaseLayout from '../components/BaseLayout';
 import {
 	Text,
@@ -17,46 +16,74 @@ import {
 } from 'native-base';
 import { Icon } from '@rneui/base';
 import { supabase } from '../lib/supabase';
-import { G } from 'react-native-svg';
+import { useFocusEffect } from '@react-navigation/native';
+import { useLogin } from '../context/LoginProvider';
 
 const AddBill = () => {
+	const { userDetails } = useLogin();
 	const [splitType, setSplitType] = useState('');
-	const [isSelected, setIsSelected] = useState();
 	const [groupList, setGroupList] = useState([]);
 	const [selectedGroup, setSelectedGroup] = useState();
 	const [groupMember, setGroupMember] = useState([]);
 	const [itemName, setItemName] = useState('');
-	const [itemPrice, setItemPrice] = useState(0);
+	const [totalAmount, setTotalAmount] = useState(0);
+	const [equalSplit, setEqualSplit] = useState(0);
 
-	const loadAllGroup = async (groupId) => {
-		const { data, error } = await supabase.from('groups').select('*');
+	useFocusEffect(
+		useCallback(() => {
+			loadAllGroup();
+		}, [])
+	);
 
-		if (data) {
-			setGroupList(data);
-			console.log(data);
+	const loadAllGroup = async () => {
+		const { data, error } = await supabase.from('groups').select(`
+		group_id, 
+		group_name, 
+		created_at, 
+		group_description, 
+		created_by, 
+		group_type,
+		expenses(total_amount, description, expense_type, status, created_at, created_by),
+		group_members(user_id, role),
+		users(username, email, gender)`);
+
+		const filteredGroups = data.filter((group) =>
+			group.group_members.some((member) => member.user_id === userDetails?.user_id)
+		);
+
+		if (filteredGroups) setGroupList(filteredGroups);
+		if (error) console.log(error);
+	};
+
+	const handleSelectGroup = async (group) => {
+		setSelectedGroup(group);
+		const { data: groupMembers, error } = await supabase
+			.from('group_members')
+			.select(`user_id, users(username)`)
+			.eq('group_id', group.group_id);
+
+		if (groupMembers) {
+			const formattedMembers = groupMembers.map((member) => ({
+				user_id: member.user_id,
+				username: member.users.username,
+			}));
+			setGroupMember(formattedMembers);
 		}
+
+		if (error) console.log(error);
 	};
 
 	const handleSplit = (type) => {
 		setSplitType(type);
 
 		if (type === 'equal') {
-			console.log('Split equally');
+			const splittedAmount = (totalAmount / groupMember.length).toFixed(2);
+			setEqualSplit(splittedAmount);
+			setGroupMember(
+				groupMember.map((member) => ({ ...member, amountToPay: splittedAmount }))
+			);
 		} else {
 			console.log('Split inequally');
-		}
-		// load popup with group members here
-		// handle how the amount should be split
-	};
-
-	const loadGroupMembers = async (groupId) => {
-		const { data, error } = await supabase
-			.from('group_members')
-			.select('')
-			.eq('group_id', groupId);
-		if (data) {
-			console.log(data);
-			setGroupMember(data);
 		}
 	};
 
@@ -64,20 +91,14 @@ const AddBill = () => {
 		loadAllGroup();
 	}, []);
 
-	const cancelCreate = () => {
-		console.log('cancelCreate');
-	};
-
-	const saveBill = () => {
-		console.log('saveBill');
-	};
+	const cancelCreate = () => console.log('cancelCreate');
+	const saveBill = () => console.log('saveBill');
 
 	return (
 		<BaseLayout>
 			<Box safeAreaTop={true}>
 				<View>
 					<Heading textAlign="center">Create a bill</Heading>
-
 					<Box mt={4}>
 						<Text fontSize="lg" fontWeight="medium">
 							Select a group
@@ -91,22 +112,20 @@ const AddBill = () => {
 						>
 							{groupList.map((group) => (
 								<Pressable
-									mr={2}
-									mb={2}
 									key={group.group_id}
 									_focus={{
 										bg: 'light.50',
 										borderWidth: 4,
 										borderColor: 'black',
 									}}
+									m={1}
 									bg="white"
 									rounded="xl"
-									_pressed={{
-										bg: 'purple.300',
-									}}
 									onPress={() => {
-										setSelectedGroup(group);
+										handleSelectGroup(group);
 									}}
+									borderColor="purple.800"
+									borderWidth={selectedGroup == group ? 2 : 0}
 								>
 									<Center height={100} w={100} rounded="2xl" p={2}>
 										<Text fontSize="md" fontWeight="bold" textAlign="center">
@@ -117,7 +136,6 @@ const AddBill = () => {
 							))}
 						</Flex>
 					</Box>
-
 					<Flex direction="row" py={6} rounded="xl" mt={2}>
 						<Stack space={4} w="75%" mx="auto" pr={10}>
 							<Flex direction="row" w="100%" maxW="300px" alignItems="center">
@@ -130,7 +148,6 @@ const AddBill = () => {
 									/>
 								</Box>
 								<Input
-									type="text"
 									borderColor="purple.800"
 									focusOutlineColor="purple.700"
 									size="md"
@@ -140,10 +157,9 @@ const AddBill = () => {
 									ml={4}
 									placeholderTextColor="black"
 									value={itemName}
-									onChange={(name) => setItemName(name)}
+									onChangeText={(name) => setItemName(name)}
 								/>
 							</Flex>
-
 							<Flex direction="row" w="100%" maxW="300px" alignItems="center">
 								<Box bg="light.50" p={1} rounded="md">
 									<Icon
@@ -164,11 +180,10 @@ const AddBill = () => {
 									colorScheme="purple"
 									ml={4}
 									placeholderTextColor="black"
-									value={itemPrice}
-									onChange={(price) => setItemName(price)}
+									value={totalAmount}
+									onChangeText={(price) => setTotalAmount(price)}
 								/>
 							</Flex>
-
 							<Flex direction="row" w="full" alignItems="center">
 								<Box bg="light.50" p={1} rounded="md">
 									<Icon
@@ -201,15 +216,14 @@ const AddBill = () => {
 							</Flex>
 						</Stack>
 					</Flex>
-
 					<Flex alignItems="center" mt={4}>
 						<Box w="300px">
 							<Text textAlign="center" fontSize="md">
-								You lent $50 to the other 5 members of your group equally
+								You lent ${equalSplit} to the other {groupMember.length} members of
+								your group equally
 							</Text>
 						</Box>
 					</Flex>
-
 					<Flex alignItems="center" mt={6}>
 						<Button.Group space={4}>
 							<Button
@@ -217,10 +231,7 @@ const AddBill = () => {
 								rounded="full"
 								w="100px"
 								colorScheme="purple"
-								_text={{
-									fontSize: 'md',
-									fontWeight: 'bold',
-								}}
+								_text={{ fontSize: 'md', fontWeight: 'bold' }}
 								onPress={cancelCreate}
 							>
 								Cancel
@@ -230,10 +241,7 @@ const AddBill = () => {
 								rounded="full"
 								w="100px"
 								colorScheme="purple"
-								_text={{
-									fontSize: 'md',
-									fontWeight: 'bold',
-								}}
+								_text={{ fontSize: 'md', fontWeight: 'bold' }}
 								onPress={saveBill}
 							>
 								Save

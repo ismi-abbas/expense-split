@@ -53,7 +53,6 @@ const CreateGroup = ({ navigation }) => {
 	}, []);
 
 	const selectMembers = (value) => {
-		// check if member exist on array, remove it, else add it. Selection logic.
 		setSelectedMember(
 			selectedMember.includes(value)
 				? selectedMember.filter((member) => member !== value)
@@ -80,42 +79,55 @@ const CreateGroup = ({ navigation }) => {
 	const registerGroup = async () => {
 		console.log(groupName, groupType, groupDescription, selectedMember);
 
-		const { data: groupData, error } = await supabase
-			.from('groups')
-			.insert({
-				group_name: groupName,
-				group_description: groupDescription,
-				group_type: groupType,
-				created_by: userDetails.user_id,
-			})
-			.select()
-			.single();
+		if (!groupName || !groupType || !groupDescription || !selectMembers) {
+			toast.show({
+				title: 'Please fill all the fields',
+			});
+		} else {
+			const { data: groupData, error } = await supabase
+				.from('groups')
+				.insert({
+					group_name: groupName,
+					group_description: groupDescription,
+					group_type: groupType,
+					created_by: userDetails.user_id,
+				})
+				.select()
+				.single();
 
-		if (groupData) {
-			const groupMembersData = selectedMember.map((memberId) => ({
-				group_id: groupData.group_id,
-				user_id: memberId,
-				role: 'member',
-			}));
+			if (groupData) {
+				const groupMembersData = selectedMember.map((memberId) => ({
+					group_id: groupData.group_id,
+					user_id: memberId,
+					role: 'member',
+				}));
 
-			const { data, error } = await supabase
-				.from('group_members')
-				.insert(groupMembersData)
-				.select();
+				await supabase.from('activities').insert({
+					activity_description: `${userDetails?.user_id} has created group ${groupData.group_name}`,
+					activity_type: 'group',
+					group_id: groupData.group_id,
+					status: 'created',
+				});
 
-			if (data) {
-				navigation.goBack();
+				const { data, error } = await supabase
+					.from('group_members')
+					.insert(groupMembersData)
+					.select();
+
+				if (data) {
+					navigation.goBack();
+				}
+
+				if (error) {
+					toast.show({ title: 'Error creating group' });
+					console.log(error);
+				}
 			}
 
 			if (error) {
 				toast.show({ title: 'Error creating group' });
 				console.log(error);
 			}
-		}
-
-		if (error) {
-			toast.show({ title: 'Error creating group' });
-			console.log(error);
 		}
 	};
 
