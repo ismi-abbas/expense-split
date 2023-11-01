@@ -107,11 +107,16 @@ const AddBill = () => {
 	};
 
 	const cancelCreate = () => {
+		clearField();
+	};
+
+	const clearField = () => {
 		setItemName(null);
 		setTotalAmount(null);
 		setSplitType('');
 		setSelectedGroup(null);
 	};
+
 	const saveBill = async () => {
 		if (!selectedGroup || !itemName || !totalAmount) {
 			toast.show({
@@ -151,11 +156,9 @@ const AddBill = () => {
 					amount: member.amountToPay,
 				}));
 
-				const {
-					data: insertData,
-					error: insertError,
-					status,
-				} = await supabase.from('expense_participants').insert(dataToInsert);
+				const { data: insertData, error: insertError } = await supabase
+					.from('expense_participants')
+					.insert(dataToInsert);
 
 				if (insertError) {
 					toast.show({
@@ -165,7 +168,10 @@ const AddBill = () => {
 				}
 
 				if (insertData) {
-					console.log(insertData, status);
+					toast.show({
+						title: 'Bill added to expense',
+					});
+					clearField();
 				}
 			}
 		} catch (error) {

@@ -72,7 +72,7 @@ const SignUp = () => {
 	};
 
 	return (
-		<BaseLayout bgColor="light.50">
+		<BaseLayout isWhite={true}>
 			<Box safeAreaTop={true} flex={1} justifyContent="center" mx={5}>
 				<Box alignItems="center">
 					<Box w="full">

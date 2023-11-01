@@ -14,6 +14,7 @@ import {
 	Flex,
 } from 'native-base';
 import React, { useEffect, useState } from 'react';
+174;
 import BaseLayout from '../components/BaseLayout';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
@@ -167,13 +168,13 @@ const CreateGroup = ({ navigation }) => {
 					</FormControl.Label>
 					<ScrollView horizontal showsHorizontalScrollIndicator={false}>
 						<HStack space={2}>
-							{type.map((item) => (
+							{type.map((item, index) => (
 								<Button
+									key={index}
 									_text={{
 										fontSize: 'sm',
 										fontWeight: 'bold',
 									}}
-									key={item.value}
 									w="100px"
 									variant="subtle"
 									colorScheme="purple"
