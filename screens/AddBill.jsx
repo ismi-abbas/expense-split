@@ -13,6 +13,7 @@ import {
 	Select,
 	CheckIcon,
 	Button,
+	useToast,
 } from 'native-base';
 import { Icon } from '@rneui/base';
 import { supabase } from '../lib/supabase';
@@ -26,8 +27,14 @@ const AddBill = () => {
 	const [selectedGroup, setSelectedGroup] = useState();
 	const [groupMember, setGroupMember] = useState([]);
 	const [itemName, setItemName] = useState('');
-	const [totalAmount, setTotalAmount] = useState(0);
+	const [totalAmount, setTotalAmount] = useState();
 	const [equalSplit, setEqualSplit] = useState(0);
+
+	const toast = useToast();
+
+	useEffect(() => {
+		loadAllGroup();
+	}, []);
 
 	useFocusEffect(
 		useCallback(() => {
@@ -76,6 +83,18 @@ const AddBill = () => {
 	const handleSplit = (type) => {
 		setSplitType(type);
 
+		if (!selectedGroup) {
+			toast.show({
+				title: 'Please select a group',
+			});
+			return;
+		} else if (!totalAmount) {
+			toast.show({
+				title: 'Please insert total amount',
+			});
+			return;
+		}
+
 		if (type === 'equal') {
 			const splittedAmount = (totalAmount / groupMember.length).toFixed(2);
 			setEqualSplit(splittedAmount);
@@ -87,12 +106,75 @@ const AddBill = () => {
 		}
 	};
 
-	useEffect(() => {
-		loadAllGroup();
-	}, []);
+	const cancelCreate = () => {
+		setItemName(null);
+		setTotalAmount(null);
+		setSplitType('');
+		setSelectedGroup(null);
+	};
+	const saveBill = async () => {
+		if (!selectedGroup || !itemName || !totalAmount) {
+			toast.show({
+				title: 'Please fill all the required fields',
+			});
+			return;
+		}
 
-	const cancelCreate = () => console.log('cancelCreate');
-	const saveBill = () => console.log('saveBill');
+		try {
+			const { data: expenseData, error: expenseError } = await supabase
+				.from('expenses')
+				.insert({
+					description: itemName,
+					group_id: selectedGroup.group_id,
+					paid_by: userDetails?.user_id,
+					status: 'Pending',
+					total_amount: totalAmount,
+					created_by: userDetails?.user_id,
+				})
+				.select('expense_id')
+				.single();
+
+			if (expenseError) {
+				toast.show({
+					title: 'Error creating expense',
+				});
+				return;
+			}
+
+			if (expenseData) {
+				const dataToInsert = groupMember.map((member) => ({
+					amount: equalSplit,
+					expense_id: expenseData.expense_id,
+					pending_from: member.user_id,
+					status: 'unsettled',
+					paid_by: userDetails.user_id,
+					amount: member.amountToPay,
+				}));
+
+				const {
+					data: insertData,
+					error: insertError,
+					status,
+				} = await supabase.from('expense_participants').insert(dataToInsert);
+
+				if (insertError) {
+					toast.show({
+						title: 'Error inserting expense participants',
+					});
+					return;
+				}
+
+				if (insertData) {
+					console.log(insertData, status);
+				}
+			}
+		} catch (error) {
+			console.error('Error in saveBill:', error);
+			toast.show({
+				title: 'An error occurred while saving the bill',
+			});
+		}
+	};
 
 	return (
 		<BaseLayout>

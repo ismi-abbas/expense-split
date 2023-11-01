@@ -12,13 +12,11 @@ const Group = ({ navigation }) => {
 	const [groups, setGroups] = useState([]);
 	const [amountOwe, setAmountOwe] = useState(0);
 	const [amountOwed, setAmountOwed] = useState(0);
-	const [currentUser, setCurrentUser] = useState(null);
 	const [isHidden, setIsHidden] = useState(false);
 
 	useEffect(() => {
-		setCurrentUser(userDetails);
 		fetchData();
-	}, [userDetails]);
+	}, []);
 
 	const fetchData = async () => {
 		await getAmountOwe();
@@ -40,7 +38,7 @@ const Group = ({ navigation }) => {
 
 		if (userExpense) {
 			const amountOwed = userExpense.reduce((acc, item) => {
-				if (item.pending_from !== currentUser?.user_id && item.status === 'unsettled') {
+				if (item.pending_from !== userDetails?.user_id && item.status === 'unsettled') {
 					return acc + item.amount;
 				} else {
 					return acc;
@@ -48,7 +46,7 @@ const Group = ({ navigation }) => {
 			}, 0);
 
 			const amountOwe = userExpense.reduce((acc, item) => {
-				if (item.pending_from === currentUser?.user_id && item.status === 'unsettled') {
+				if (item.pending_from === userDetails?.user_id && item.status === 'unsettled') {
 					return acc + item.amount;
 				} else {
 					return acc;
@@ -74,7 +72,7 @@ const Group = ({ navigation }) => {
 			}
 
 			const filteredGroups = data.filter((group) =>
-				group.group_members.some((member) => member.user_id === currentUser?.user_id)
+				group.group_members.some((member) => member.user_id === userDetails?.user_id)
 			);
 
 			if (filteredGroups) {

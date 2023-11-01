@@ -1,4 +1,5 @@
 {
+	"owner": "expense-split",
 	"cli": {
 		"version": ">= 5.4.0"
 	},

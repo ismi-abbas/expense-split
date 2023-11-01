@@ -114,7 +114,7 @@ const ModalStackNavigator = () => {
 			<Stack.Screen
 				name="CreateGroup"
 				component={CreateGroup}
-				options={({ route }) => ({
+				options={() => ({
 					title: `Create Group`,
 					headerShown: true,
 				})}
@@ -124,7 +124,7 @@ const ModalStackNavigator = () => {
 };
 
 const MainNavigator = () => {
-	const { isLoggedIn, setIsLoggedIn } = useLogin();
+	const { isLoggedIn } = useLogin();
 	return isLoggedIn ? <ModalStackNavigator /> : <StackNavigator />;
 };
 
