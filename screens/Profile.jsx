@@ -10,6 +10,8 @@ import {
 	Pressable,
 	Box,
 	Alert,
+	TextArea,
+	useToast,
 } from 'native-base';
 import { useLogin } from '../context/LoginProvider';
 import BaseLayout from '../components/BaseLayout';
@@ -18,22 +20,30 @@ import { Icon } from '@rneui/base';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useIsFocused } from '@react-navigation/native';
 
 const Profile = () => {
-	const { setIsLoggedIn, userDetails } = useLogin();
+	const { setIsLoggedIn, userDetails, setUserDetails } = useLogin();
+	const toast = useToast();
+	const isFocused = useIsFocused();
 
 	const [session, setSession] = useState(null);
 	const [loading, setLoading] = useState(true);
-	const [currentUser, setCurrentUser] = useState();
+	const [email, setEmail] = useState();
+	const [address, setAddress] = useState();
+	const [phoneNumber, setPhoneNumber] = useState();
+	const [enableEdit, setEnableEdit] = useState(false);
+	const [username, setUsername] = useState();
 
 	useEffect(() => {
-		setCurrentUser(userDetails);
-	}, []);
+		fetchUserProfile();
+	}, [isFocused]);
 
 	const logout = async () => {
 		try {
 			AsyncStorage.clear();
 			setIsLoggedIn(false);
+			setUserDetails(null);
 		} catch (err) {
 			console.log(err);
 		}
@@ -46,30 +56,42 @@ const Profile = () => {
 	const updateBankDetails = () => {
 		console.log('Bank details updated');
 	};
-	async function updateProfile({ username, website, avatar_url }) {
-		try {
-			setLoading(true);
-			if (!session?.user) throw new Error('No user on the session!');
 
-			const updates = {
-				id: session?.user.id,
-				username,
-				website,
-				avatar_url,
-				updated_at: new Date(),
-			};
+	const fetchUserProfile = async () => {
+		const { data: useProfile, error } = await supabase
+			.from('users')
+			.select()
+			.eq('user_id', userDetails.user_id)
+			.single();
 
-			const { error } = await supabase.from('profiles').upsert(updates);
+		if (useProfile) {
+			setUserDetails(useProfile);
+			setEmail(useProfile.email);
+			setPhoneNumber(useProfile.phone_number);
+			setAddress(useProfile.address);
+			setUsername(useProfile.username);
+		}
+	};
+	async function updateProfile() {
+		setLoading(true);
 
-			if (error) {
-				throw error;
-			}
-		} catch (error) {
-			if (error instanceof Error) {
-				Alert.alert(error.message);
-			}
-		} finally {
-			setLoading(false);
+		const { data, error, status } = await supabase.from('users').upsert({
+			address: address,
+			email: email,
+			phone_number: phoneNumber,
+			username: username,
+			user_id: userDetails.user_id,
+		});
+
+		if (status === 200) {
+			toast.show({
+				title: 'Update successful',
+			});
+			fetchUserProfile();
+		}
+
+		if (error) {
+			console.log(error);
 		}
 	}
 
@@ -85,9 +107,12 @@ const Profile = () => {
 					>
 						<Heading>Profile</Heading>
 						<Pressable
-							onPress={() => console.log('Edit user')}
+							onPress={() => setEnableEdit(!enableEdit)}
+							padding={1}
 							_pressed={{
-								color: 'light.50',
+								backgroundColor: 'white',
+								padding: 1,
+								rounded: 'md',
 							}}
 						>
 							<Text fontSize="sm" fontWeight="bold">
@@ -99,10 +124,23 @@ const Profile = () => {
 					<HStack w="full" h={20} alignItems="center" justifyContent="center" space={4}>
 						<Icon
 							size={50}
-							name={currentUser?.gender === 'male' ? 'face-man' : 'face-woman'}
+							name={userDetails?.gender === 'male' ? 'face-man' : 'face-woman'}
 							type="material-community"
 						/>
-						<Heading size="lg">{currentUser?.username}</Heading>
+						{!enableEdit ? (
+							<Input
+								size="2xl"
+								w="200px"
+								variant="underlined"
+								keyboardType="default"
+								type="text"
+								value={username}
+								fontWeight="bold"
+								onChangeText={(value) => setUsername(value)}
+							/>
+						) : (
+							<Heading>{username}</Heading> // Display as text when not in edit mode
+						)}
 					</HStack>
 
 					<VStack space={4} w="300px">
@@ -122,8 +160,9 @@ const Profile = () => {
 									variant="rounded"
 									keyboardType="default"
 									type="text"
-									value={currentUser?.email}
-									onChangeText={(value) => console.log(value)}
+									isReadOnly={enableEdit}
+									value={email}
+									onChangeText={(value) => setEmail(value)}
 								/>
 							</VStack>
 						</FormControl>
@@ -143,8 +182,9 @@ const Profile = () => {
 									variant="rounded"
 									keyboardType="default"
 									type="text"
-									value={currentUser?.phone_number}
-									onChangeText={(text) => console.log(text)}
+									isReadOnly={enableEdit}
+									value={phoneNumber}
+									onChangeText={(value) => setPhoneNumber(value)}
 								/>
 							</VStack>
 						</FormControl>
@@ -158,26 +198,21 @@ const Profile = () => {
 								>
 									Address
 								</FormControl.Label>
-								<Input
+								<TextArea
 									bg="light.50"
-									size="lg"
-									variant="rounded"
+									size="md"
+									rounded="lg"
 									keyboardType="default"
 									type="text"
-									// value={truncate(currentUser?.address, 20)}
+									isReadOnly={enableEdit}
+									value={truncate(userDetails?.address, 20)}
 								/>
 							</VStack>
 						</FormControl>
 					</VStack>
 
 					<VStack space={4} mt={10} w="full" px={10}>
-						<Button
-							rounded="full"
-							colorScheme="purple"
-							onPress={() =>
-								updateProfile({ username, website, avatar_url: avatarUrl })
-							}
-						>
+						<Button rounded="full" colorScheme="purple" onPress={() => updateProfile()}>
 							Update Profile
 						</Button>
 						<Button

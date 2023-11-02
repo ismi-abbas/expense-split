@@ -3,25 +3,15 @@ import { Icon } from '@rneui/base';
 import BaseLayout from '../components/BaseLayout';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { useLogin } from '../context/LoginProvider';
-import { RefreshControl } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
 
 function Activities() {
 	const [activities, setActivities] = useState([]);
-	const [refreshing, setRefreshing] = useState(false);
-
-	const { userDetails } = useLogin();
+	const isFocused = useIsFocused();
 
 	useEffect(() => {
 		fetchActivities();
-		console.log('userDetails ==========>', userDetails);
-	}, []);
-
-	const onRefresh = () => {
-		setRefreshing(true);
-		fetchActivities();
-		setRefreshing(false);
-	};
+	}, [isFocused]);
 
 	async function fetchActivities() {
 		const { data, error } = await supabase.from('activities').select();
@@ -44,9 +34,6 @@ function Activities() {
 				</Flex>
 
 				<FlatList
-					refreshControl={
-						<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-					}
 					mt={5}
 					data={activities}
 					renderItem={({ item: activity }) => (

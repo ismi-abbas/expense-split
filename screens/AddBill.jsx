@@ -14,6 +14,9 @@ import {
 	CheckIcon,
 	Button,
 	useToast,
+	Checkbox,
+	VStack,
+	PresenceTransition,
 } from 'native-base';
 import { Icon } from '@rneui/base';
 import { supabase } from '../lib/supabase';
@@ -29,6 +32,7 @@ const AddBill = () => {
 	const [itemName, setItemName] = useState('');
 	const [totalAmount, setTotalAmount] = useState();
 	const [equalSplit, setEqualSplit] = useState(0);
+	const [isHidden, setIsHidden] = useState(true);
 
 	const toast = useToast();
 
@@ -73,6 +77,7 @@ const AddBill = () => {
 			const formattedMembers = groupMembers.map((member) => ({
 				user_id: member.user_id,
 				username: member.users.username,
+				is_selected: false,
 			}));
 			setGroupMember(formattedMembers);
 		}
@@ -82,6 +87,7 @@ const AddBill = () => {
 
 	const handleSplit = (type) => {
 		setSplitType(type);
+		setIsHidden(false);
 
 		if (!selectedGroup) {
 			toast.show({
@@ -115,6 +121,7 @@ const AddBill = () => {
 		setTotalAmount(null);
 		setSplitType('');
 		setSelectedGroup(null);
+		setIsHidden(true);
 	};
 
 	const saveBill = async () => {
@@ -302,8 +309,38 @@ const AddBill = () => {
 									</Select>
 								</Box>
 							</Flex>
+							<PresenceTransition
+								visible={!isHidden}
+								initial={{
+									opacity: 0,
+								}}
+								animate={{
+									opacity: 1,
+									transition: {
+										duration: 250,
+									},
+								}}
+							>
+								<VStack
+									w="300px"
+									bgColor="white"
+									rounded="md"
+									justifyContent="center"
+									py={2}
+									px={4}
+									space={1}
+									shadow={1}
+								>
+									{groupMember?.map((member) => (
+										<Checkbox key={member.user_id} value={member.username}>
+											{member.username}
+										</Checkbox>
+									))}
+								</VStack>
+							</PresenceTransition>
 						</Stack>
 					</Flex>
+
 					<Flex alignItems="center" mt={4}>
 						<Box w="300px">
 							<Text textAlign="center" fontSize="md">

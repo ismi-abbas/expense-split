@@ -3,16 +3,17 @@ import { Box, Stack, Flex, HStack, VStack, Heading, Text, FlatList, Pressable } 
 import { Icon } from '@rneui/themed';
 import MonthlyDetails from '../components/MonthlyDetails';
 import BaseLayout from '../components/BaseLayout';
-import { monthlyBills, users, groupExpenseDetails } from '../DummyData';
 import { formatDate } from '../lib/methods';
 import { supabase } from '../lib/supabase';
 import { useLogin } from '../context/LoginProvider';
+import { useIsFocused } from '@react-navigation/native';
 
 const ViewGroup = ({ route }) => {
 	const { userDetails } = useLogin();
 	const { title, data, creator } = route.params;
 	const { expenses, group_id } = data;
 	const [expenseParticipants, setExpenseParticipants] = useState();
+	const isFocused = useIsFocused();
 
 	const [allExpenses, setAllExpenses] = useState([]);
 	const fetchData = async () => {
@@ -23,11 +24,7 @@ const ViewGroup = ({ route }) => {
 	useEffect(() => {
 		fetchData();
 		categorizeExpensesByMonth(expenses);
-	}, []);
-
-	const refresh = () => {
-		fetchData();
-	};
+	}, [isFocused]);
 
 	const categorizeExpensesByMonth = (expenses) => {
 		const categorizedExpenses = [];
@@ -75,7 +72,7 @@ const ViewGroup = ({ route }) => {
 				username: member.users.username,
 			}));
 
-			const expenseParticipants = allExpenses
+			const yourExpensesOwed = allExpenses
 				.flatMap((expense) => expense.expense_participants)
 				.filter(
 					(ex) =>
@@ -90,9 +87,68 @@ const ViewGroup = ({ route }) => {
 					paid_by_username: mappedUsers.find(
 						(user) => user.user_id === participant.paid_by
 					)?.username,
-				}));
+				}))
+				.reduce((result, expense) => {
+					const key = `${expense.paid_by}-${expense.pending_from}`;
 
-			setExpenseParticipants(expenseParticipants);
+					if (!result[key]) {
+						result[key] = {
+							paid_by: expense.paid_by,
+							pending_from: expense.pending_from,
+							username: expense.username,
+							paid_by_username: expense.paid_by_username,
+							amount: 0,
+						};
+					}
+
+					result[key].amount += expense.amount;
+					return result;
+				}, {});
+
+			const expensesOwedToYou = allExpenses
+				.flatMap((expense) => expense.expense_participants)
+				.filter(
+					(ex) =>
+						ex.pending_from === userDetails.user_id &&
+						ex.paid_by !== userDetails.user_id &&
+						ex.status === 'unsettled'
+				)
+				.map((participant) => ({
+					...participant,
+					username: mappedUsers.find((user) => user.user_id === participant.pending_from)
+						?.username,
+					paid_by_username: mappedUsers.find(
+						(user) => user.user_id === participant.paid_by
+					)?.username,
+				}))
+				.reduce((result, expense) => {
+					const key = `${expense.paid_by}-${expense.pending_from}`;
+
+					if (!result[key]) {
+						result[key] = {
+							paid_by: expense.paid_by,
+							pending_from: expense.pending_from,
+							username: expense.username,
+							paid_by_username: expense.paid_by_username,
+							amount: 0,
+						};
+					}
+
+					result[key].amount += expense.amount;
+					return result;
+				}, {});
+
+			const yourExpensesOwedArray = Object.values(yourExpensesOwed);
+			const myDebt = Object.values(expensesOwedToYou);
+			const combined = yourExpensesOwedArray.concat(myDebt);
+			setExpenseParticipants(combined);
+			console.log(combined);
+
+			// quite a long metode. This simply flatten the array object to get the expense_participant from expenses
+			// then filter it to get only amount they owes me,
+			// the map to get the username,
+			// then reduct to group same user, and count total amount to each user
+			// lastly convert back to array from key value object
 
 			if (error || groupMemberError) {
 				console.log(error || groupMemberError);
@@ -153,7 +209,7 @@ const ViewGroup = ({ route }) => {
 				<VStack space={2} justifyContent="center" w="full">
 					{expenseParticipants?.map((detail) => (
 						<HStack
-							key={detail.participant_id}
+							key={detail.paid_by}
 							space={2}
 							alignItems="center"
 							_text={{
@@ -169,15 +225,26 @@ const ViewGroup = ({ route }) => {
 								rounded="md"
 								w="250px"
 								shadow={2}
+								justifyContent="space-between"
 							>
 								<Flex>
 									<Text>
-										{detail.username} owes {detail.paid_by_username}
+										{detail.username === userDetails.username
+											? 'You'
+											: detail.username}{' '}
+										owes {detail.paid_by_username}
 									</Text>
 								</Flex>
 								<Flex flexDirection="row" alignSelf="end">
-									<Text color="blue.400" fontWeight="bold">
-										{detail.amount}$
+									<Text
+										color={
+											detail.username === userDetails.username
+												? 'red.400'
+												: 'blue.400'
+										}
+										fontWeight="bold"
+									>
+										${detail.amount}
 									</Text>
 								</Flex>
 							</Flex>
@@ -192,11 +259,7 @@ const ViewGroup = ({ route }) => {
 								shadow={2}
 								justifyContent="center"
 							>
-								<Pressable
-									_pressed={{
-										bgColor: 'gray.300',
-									}}
-								>
+								<Pressable>
 									<Text fontWeight="bold">
 										{detail.status === 'unsettled' ? 'Remind' : 'Settled Up'}
 									</Text>
