@@ -78,8 +78,6 @@ const CreateGroup = ({ navigation }) => {
 	};
 
 	const registerGroup = async () => {
-		console.log(groupName, groupType, groupDescription, selectedMember);
-
 		if (!groupName || !groupType || !groupDescription || !selectMembers) {
 			toast.show({
 				title: 'Please fill all the fields',

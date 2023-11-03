@@ -142,7 +142,6 @@ const ViewGroup = ({ route }) => {
 			const myDebt = Object.values(expensesOwedToYou);
 			const combined = yourExpensesOwedArray.concat(myDebt);
 			setExpenseParticipants(combined);
-			console.log(combined);
 
 			// quite a long metode. This simply flatten the array object to get the expense_participant from expenses
 			// then filter it to get only amount they owes me,
@@ -232,7 +231,10 @@ const ViewGroup = ({ route }) => {
 										{detail.username === userDetails.username
 											? 'You'
 											: detail.username}{' '}
-										owes {detail.paid_by_username}
+										owes{' '}
+										{detail.paid_by_username === userDetails.username
+											? 'You'
+											: detail.paid_by_username}
 									</Text>
 								</Flex>
 								<Flex flexDirection="row" alignSelf="end">
@@ -272,7 +274,9 @@ const ViewGroup = ({ route }) => {
 			<FlatList
 				showsVerticalScrollIndicator={false}
 				data={allExpenses}
-				renderItem={({ item }) => <MonthlyDetails bill={item} />}
+				renderItem={({ item }) => (
+					<MonthlyDetails bill={item} expensesParticipants={expenseParticipants} />
+				)}
 			/>
 		</BaseLayout>
 	);

@@ -1,10 +1,9 @@
-import { Center, Button, Modal, Heading, Text, VStack, Stack, Flex } from 'native-base';
+import { Center, Button, Modal, Heading, Text, VStack, Stack, Flex, Box } from 'native-base';
 import { formatDate } from '../lib/methods';
 import { Icon } from '@rneui/themed';
 
 const RecordModal = ({ navigation, route }) => {
 	const { record } = route.params;
-	console.log(record);
 
 	const closeModal = () => {
 		navigation.goBack();
@@ -13,6 +12,7 @@ const RecordModal = ({ navigation, route }) => {
 	const settleUp = () => {
 		console.log('Settled');
 	};
+
 	return (
 		<Center>
 			<Modal isOpen={true} onClose={closeModal}>
@@ -66,7 +66,7 @@ const SettleMentLayout = ({ record, closeModal }) => {
 
 const RecordLayout = ({ record, closeModal, settleUp }) => {
 	return (
-		<Modal.Content maxWidth="400px" alignItems="center" py={10}>
+		<Modal.Content width="400px" alignItems="center" py={10}>
 			<Stack direction="row" space={2}>
 				{record.type === 'settlement' ? (
 					<Icon
@@ -87,11 +87,15 @@ const RecordLayout = ({ record, closeModal, settleUp }) => {
 				</Text>
 
 				<Stack space={2} mt={4}>
-					<Text fontSize="md">Bill Creator: {record.created_by}</Text>
+					<Text>{JSON.stringify(record)}</Text>
+					<Text fontSize="md">Bill Creator: {record.creator_name}</Text>
 					<Text fontSize="md">Bill Created on {formatDate(record.created_at)}</Text>
 					<Text fontSize="md">
-						Divided by 6, {''}
-						<Text color="red.500">you awe {record.total_amount}$</Text>
+						Divided by {record.participant_count},{' '}
+						<Text fontSize="md" color="red.500">
+							you owe {record.total_amount}$
+						</Text>
+						for this expense
 					</Text>
 				</Stack>
 			</Flex>

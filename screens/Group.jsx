@@ -21,8 +21,9 @@ const Group = ({ navigation }) => {
 
 	const fetchData = async () => {
 		try {
-			const [expensesResponse, groupResponse, groupsResponse] = await Promise.all([
-				supabase.from('expenses').select(`
+			const [expensesResponse, groupMembersResponse, groupsResponse, allUsersResponse] =
+				await Promise.all([
+					supabase.from('expenses').select(`
 				expense_id, 
 				group_id,
 				paid_by,
@@ -33,12 +34,12 @@ const Group = ({ navigation }) => {
 				expense_participants(participant_id, expense_id, status, created_at, amount, pending_from, paid_by)
 			  `),
 
-				supabase
-					.from('group_members')
-					.select('group_id')
-					.eq('user_id', userDetails.user_id),
+					supabase
+						.from('group_members')
+						.select('group_id')
+						.eq('user_id', userDetails.user_id),
 
-				supabase.from('groups').select(`
+					supabase.from('groups').select(`
 				group_id, 
 				group_name, 
 				created_at, 
@@ -48,22 +49,27 @@ const Group = ({ navigation }) => {
 				expenses(total_amount, description, expense_type, status, created_at, created_by, expense_id, paid_by), 
 				group_members(user_id, role), 
 				users(username, email, gender)`),
-			]);
+					supabase.from('users').select(),
+				]);
 
 			if (expensesResponse.error) {
 				console.log(expensesResponse.error);
 			}
 
-			if (groupResponse.error) {
-				console.log(groupResponse.error);
+			if (groupMembersResponse.error) {
+				console.log(groupMembersResponse.error);
 			}
 			if (groupsResponse.error) {
 				console.log(groupsResponse.error);
 			}
+			if (allUsersResponse.error) {
+				console.log(allUsersResponse.error);
+			}
 
 			const allExpenses = expensesResponse.data;
-			const myGroup = groupsResponse.data;
+			const myGroup = groupMembersResponse.data;
 			const groups = groupsResponse.data;
+			const allUsers = allUsersResponse.data;
 
 			if (allExpenses && myGroup) {
 				const filteredExpenses = allExpenses.filter((expense) =>
@@ -108,6 +114,19 @@ const Group = ({ navigation }) => {
 			const filteredGroups = groups.filter((group) =>
 				group.group_members.some((member) => member.user_id === userDetails?.user_id)
 			);
+
+			// give creator name for each expenses
+			filteredGroups.forEach((group) => {
+				group.expenses.forEach((expense) => {
+					expense.creator_name = allUsers.find(
+						(user) => user.user_id === expense.created_by
+					).username;
+					expense.participant_count = allExpenses.find(
+						(ex) => ex.expense_id == expense.expense_id
+					).expense_participants.length;
+					expense.users = a;
+				});
+			});
 
 			if (filteredGroups) {
 				setGroups(filteredGroups);

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Box, Text, Heading, VStack, Flex, Pressable, View, FlatList } from 'native-base';
 import { useNavigation } from '@react-navigation/native';
 
-const MonthlyDetails = ({ bill }) => {
+const MonthlyDetails = ({ bill, expensesParticipants }) => {
 	const navigation = useNavigation();
 
 	const openRecordModal = (record) => {

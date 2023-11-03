@@ -85,31 +85,42 @@ const AddBill = () => {
 		if (error) console.log(error);
 	};
 
-	const handleSplit = (type) => {
-		setSplitType(type);
-		setIsHidden(false);
-
-		if (!selectedGroup) {
-			toast.show({
-				title: 'Please select a group',
-			});
-			return;
-		} else if (!totalAmount) {
-			toast.show({
-				title: 'Please insert total amount',
-			});
-			return;
+	const calculateSplit = (isSelected, userId, amount) => {
+		if (splitType === 'equal') {
+			amount = totalAmount / groupMember.length;
 		}
 
-		if (type === 'equal') {
-			const splittedAmount = (totalAmount / groupMember.length).toFixed(2);
-			setEqualSplit(splittedAmount);
-			setGroupMember(
-				groupMember.map((member) => ({ ...member, amountToPay: splittedAmount }))
-			);
+		const updatedGroupMembers = groupMember.map((member) => {
+			if (member.user_id === userId) {
+				return { ...member, amountToPay: amount };
+			}
+			return member;
+		});
+
+		setGroupMember(updatedGroupMembers);
+
+		const selectedMembers = updatedGroupMembers.filter((member) => member.amountToPay > 0);
+		const totalSelectedMembers = selectedMembers.length;
+
+		let newEqualSplit = 0;
+
+		if (splitType === 'equal') {
+			newEqualSplit = totalAmount / totalSelectedMembers || 0;
+			setEqualSplit(newEqualSplit);
 		} else {
-			console.log('Split inequally');
+			// For 'inequal', do nothing here for equal split calculation
+			// It will be managed manually as users enter their individual amounts
 		}
+	};
+
+	const updateAmountToPay = (userId, value) => {
+		const updatedGroupMembers = groupMember.map((member) => {
+			if (member.user_id === userId) {
+				return { ...member, amountToPay: value };
+			}
+			return member;
+		});
+		setGroupMember(updatedGroupMembers);
 	};
 
 	const cancelCreate = () => {
@@ -155,12 +166,11 @@ const AddBill = () => {
 
 			if (expenseData) {
 				const dataToInsert = groupMember.map((member) => ({
-					amount: equalSplit,
+					amount: member.amountToPay,
 					expense_id: expenseData.expense_id,
 					pending_from: member.user_id,
 					status: 'unsettled',
 					paid_by: userDetails.user_id,
-					amount: member.amountToPay,
 				}));
 
 				const { data: insertData, error: insertError } = await supabase
@@ -302,7 +312,11 @@ const AddBill = () => {
 										}}
 										mt={1}
 										size="md"
-										onValueChange={(itemValue) => handleSplit(itemValue)}
+										onValueChange={(itemValue) => {
+											setSplitType(itemValue);
+											setEqualSplit(totalAmount / groupMember.length);
+											setIsHidden(false);
+										}}
 									>
 										<Select.Item label="Split equally" value="equal" />
 										<Select.Item label="Split inequally" value="inequal" />
@@ -332,9 +346,36 @@ const AddBill = () => {
 									shadow={1}
 								>
 									{groupMember?.map((member) => (
-										<Checkbox key={member.user_id} value={member.username}>
-											{member.username}
-										</Checkbox>
+										<Flex
+											key={member.user_id}
+											direction="row"
+											alignItems="center"
+											justifyContent="space-between"
+											w="full"
+										>
+											<Checkbox
+												key={member.user_id}
+												value={member.username}
+												onChange={(value) =>
+													calculateSplit(
+														value,
+														member.user_id,
+														member.amountToPay
+													)
+												}
+											>
+												{member.username}
+											</Checkbox>
+											<Input
+												isDisabled={splitType === 'equal'}
+												value={member.amountToPay}
+												placeholder="$"
+												onChangeText={(value) =>
+													updateAmountToPay(member.user_id, value)
+												}
+												w="70px"
+											/>
+										</Flex>
 									))}
 								</VStack>
 							</PresenceTransition>
@@ -344,8 +385,9 @@ const AddBill = () => {
 					<Flex alignItems="center" mt={4}>
 						<Box w="300px">
 							<Text textAlign="center" fontSize="md">
-								You lent ${equalSplit} to the other {groupMember.length} members of
-								your group equally
+								You lent ${equalSplit} to the other {groupMember.length - 1}{' '}
+								{groupMember.length - 1 <= 1 ? 'member' : 'members'} of your group
+								equally
 							</Text>
 						</Box>
 					</Flex>
