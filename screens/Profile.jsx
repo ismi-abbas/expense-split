@@ -27,7 +27,6 @@ const Profile = () => {
 	const toast = useToast();
 	const isFocused = useIsFocused();
 
-	const [session, setSession] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [email, setEmail] = useState();
 	const [address, setAddress] = useState();
@@ -58,24 +57,24 @@ const Profile = () => {
 	};
 
 	const fetchUserProfile = async () => {
-		const { data: useProfile, error } = await supabase
+		const { data: userProfile, error } = await supabase
 			.from('users')
 			.select()
 			.eq('user_id', userDetails.user_id)
 			.single();
 
-		if (useProfile) {
-			setUserDetails(useProfile);
-			setEmail(useProfile.email);
-			setPhoneNumber(useProfile.phone_number);
-			setAddress(useProfile.address);
-			setUsername(useProfile.username);
+		if (userProfile) {
+			setUserDetails(userProfile);
+			setEmail(userProfile.email);
+			setPhoneNumber(userProfile.phone_number);
+			setAddress(userProfile.address);
+			setUsername(userProfile.username);
 		}
 	};
 	async function updateProfile() {
 		setLoading(true);
 
-		const { data, error, status } = await supabase.from('users').upsert({
+		const { data, status } = await supabase.from('users').upsert({
 			address: address,
 			email: email,
 			phone_number: phoneNumber,
@@ -83,15 +82,11 @@ const Profile = () => {
 			user_id: userDetails.user_id,
 		});
 
-		if (status === 200) {
+		if (status === 201) {
 			toast.show({
 				title: 'Update successful',
 			});
 			fetchUserProfile();
-		}
-
-		if (error) {
-			console.log(error);
 		}
 	}
 
@@ -127,7 +122,7 @@ const Profile = () => {
 							name={userDetails?.gender === 'male' ? 'face-man' : 'face-woman'}
 							type="material-community"
 						/>
-						{!enableEdit ? (
+						{enableEdit ? (
 							<Input
 								size="2xl"
 								w="200px"
@@ -160,7 +155,7 @@ const Profile = () => {
 									variant="rounded"
 									keyboardType="default"
 									type="text"
-									isReadOnly={enableEdit}
+									isReadOnly={!enableEdit}
 									value={email}
 									onChangeText={(value) => setEmail(value)}
 								/>
@@ -182,7 +177,7 @@ const Profile = () => {
 									variant="rounded"
 									keyboardType="default"
 									type="text"
-									isReadOnly={enableEdit}
+									isReadOnly={!enableEdit}
 									value={phoneNumber}
 									onChangeText={(value) => setPhoneNumber(value)}
 								/>
@@ -204,7 +199,7 @@ const Profile = () => {
 									rounded="lg"
 									keyboardType="default"
 									type="text"
-									isReadOnly={enableEdit}
+									isReadOnly={!enableEdit}
 									value={truncate(userDetails?.address, 20)}
 								/>
 							</VStack>

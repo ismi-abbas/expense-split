@@ -124,7 +124,6 @@ const Group = ({ navigation }) => {
 					expense.participant_count = allExpenses.find(
 						(ex) => ex.expense_id == expense.expense_id
 					).expense_participants.length;
-					expense.users = a;
 				});
 			});
 

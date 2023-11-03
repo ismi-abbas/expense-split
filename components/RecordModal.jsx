@@ -1,15 +1,30 @@
 import { Center, Button, Modal, Heading, Text, VStack, Stack, Flex, Box } from 'native-base';
 import { formatDate } from '../lib/methods';
 import { Icon } from '@rneui/themed';
+import { supabase } from '../lib/supabase';
+import { useLogin } from '../context/LoginProvider';
 
 const RecordModal = ({ navigation, route }) => {
+	const { userDetails } = useLogin();
 	const { record } = route.params;
 
 	const closeModal = () => {
 		navigation.goBack();
 	};
 
-	const settleUp = () => {
+	const settleUp = async () => {
+		const { data, error } = await supabase.from('transactions').insert({
+			amount: record.total_amount,
+			expense_id: record.expense_id,
+			payee_id: record.created_by,
+			payer_id: userDetails.user_id,
+		});
+
+		if (data) console.log({ data });
+		if (error) {
+			console.log(error);
+		}
+
 		console.log('Settled');
 	};
 
