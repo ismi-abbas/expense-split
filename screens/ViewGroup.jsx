@@ -9,11 +9,11 @@ import { useLogin } from '../context/LoginProvider';
 import { useIsFocused } from '@react-navigation/native';
 
 const ViewGroup = ({ route }) => {
+	const isFocused = useIsFocused();
 	const { userDetails } = useLogin();
 	const { title, data, creator } = route.params;
 	const { expenses, group_id } = data;
 	const [expenseParticipants, setExpenseParticipants] = useState();
-	const isFocused = useIsFocused();
 
 	const [allExpenses, setAllExpenses] = useState([]);
 	const fetchData = async () => {
@@ -208,7 +208,7 @@ const ViewGroup = ({ route }) => {
 				<VStack space={2} justifyContent="center" w="full">
 					{expenseParticipants?.map((detail) => (
 						<HStack
-							key={detail.paid_by}
+							key={detail.pending_from}
 							space={2}
 							alignItems="center"
 							_text={{
@@ -246,7 +246,7 @@ const ViewGroup = ({ route }) => {
 										}
 										fontWeight="bold"
 									>
-										${detail.amount}
+										${detail.amount.toFixed(2)}
 									</Text>
 								</Flex>
 							</Flex>

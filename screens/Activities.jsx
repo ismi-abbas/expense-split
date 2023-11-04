@@ -82,11 +82,9 @@ function TransactionDetails({ activity }) {
 			return (
 				<Box>
 					<Text fontSize="lg" fontWeight="bold" color="green.800">
-						Added to group
+						{activity.activity_title}
 					</Text>
-					<Text>
-						Added to {activity.addedTo} by {activity.addedBy}
-					</Text>
+					<Text>{activity.activity_description}</Text>
 				</Box>
 			);
 		case 'group_request':

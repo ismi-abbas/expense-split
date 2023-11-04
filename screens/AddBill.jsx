@@ -25,10 +25,11 @@ import { useLogin } from '../context/LoginProvider';
 
 const AddBill = () => {
 	const { userDetails } = useLogin();
-	const [splitType, setSplitType] = useState('');
+	const [splitType, setSplitType] = useState();
 	const [groupList, setGroupList] = useState([]);
 	const [selectedGroup, setSelectedGroup] = useState();
 	const [groupMember, setGroupMember] = useState([]);
+	const [selectedGroupMember, setSelectedGroupMember] = useState([]);
 	const [itemName, setItemName] = useState('');
 	const [totalAmount, setTotalAmount] = useState();
 	const [equalSplit, setEqualSplit] = useState(0);
@@ -43,6 +44,7 @@ const AddBill = () => {
 	useFocusEffect(
 		useCallback(() => {
 			loadAllGroup();
+			clearField();
 		}, [])
 	);
 
@@ -76,7 +78,10 @@ const AddBill = () => {
 		if (groupMembers) {
 			const formattedMembers = groupMembers.map((member) => ({
 				user_id: member.user_id,
-				username: member.users.username,
+				username:
+					member.users.username === userDetails.username
+						? 'Myself'
+						: member.users.username,
 				is_selected: false,
 			}));
 			setGroupMember(formattedMembers);
@@ -85,43 +90,42 @@ const AddBill = () => {
 		if (error) console.log(error);
 	};
 
-	const calculateSplit = (isSelected, userId, amount) => {
-		if (splitType === 'equal') {
-			amount = totalAmount / groupMember.length;
-		}
-
-		const updatedGroupMembers = groupMember.map((member) => {
-			if (member.user_id === userId) {
-				return { ...member, amountToPay: amount };
+	const updateSelectedMember = (is_selected, selectedMember, type) => {
+		console.log('type hereeeeeeeeeee', type);
+		const updatedMembers = groupMember.map((member) => {
+			if (member.user_id === selectedMember.user_id) {
+				return { ...member, is_selected };
 			}
 			return member;
 		});
 
-		setGroupMember(updatedGroupMembers);
+		const selectedGroupMember = updatedMembers.filter((member) => member.is_selected);
 
-		const selectedMembers = updatedGroupMembers.filter((member) => member.amountToPay > 0);
-		const totalSelectedMembers = selectedMembers.length;
-
-		let newEqualSplit = 0;
-
-		if (splitType === 'equal') {
-			newEqualSplit = totalAmount / totalSelectedMembers || 0;
-			setEqualSplit(newEqualSplit);
-		} else {
-			// For 'inequal', do nothing here for equal split calculation
-			// It will be managed manually as users enter their individual amounts
-		}
-	};
-
-	const updateAmountToPay = (userId, value) => {
-		const updatedGroupMembers = groupMember.map((member) => {
-			if (member.user_id === userId) {
-				return { ...member, amountToPay: value };
+		if (!is_selected) {
+			const indexToRemove = selectedGroupMember.findIndex(
+				(member) => member.user_id === selectedMember.user_id
+			);
+			if (indexToRemove > -1) {
+				selectedGroupMember.splice(indexToRemove, 1);
 			}
-			return member;
-		});
-		setGroupMember(updatedGroupMembers);
+		}
+
+		// Calculate the split amount if split type is 'equal'
+		if (splitType === 'equal') {
+			const splittedAmount = totalAmount / selectedGroupMember.length || 0;
+
+			selectedGroupMember.map((member) => {
+				member.amountToPay = splittedAmount;
+			});
+		}
+
+		setSelectedGroupMember(selectedGroupMember);
+		setGroupMember(updatedMembers);
 	};
+
+	function changeSplitAmount(member, value) {
+		console.log(member, value);
+	}
 
 	const cancelCreate = () => {
 		clearField();
@@ -133,6 +137,7 @@ const AddBill = () => {
 		setSplitType('');
 		setSelectedGroup(null);
 		setIsHidden(true);
+		setGroupMember([]);
 	};
 
 	const saveBill = async () => {
@@ -275,7 +280,6 @@ const AddBill = () => {
 									/>
 								</Box>
 								<Input
-									type="number"
 									borderColor="purple.800"
 									focusOutlineColor="purple.700"
 									size="md"
@@ -313,13 +317,12 @@ const AddBill = () => {
 										mt={1}
 										size="md"
 										onValueChange={(itemValue) => {
-											setSplitType(itemValue);
-											setEqualSplit(totalAmount / groupMember.length);
 											setIsHidden(false);
+											setSplitType(itemValue);
 										}}
 									>
 										<Select.Item label="Split equally" value="equal" />
-										<Select.Item label="Split inequally" value="inequal" />
+										<Select.Item label="Split unequally" value="unequal" />
 									</Select>
 								</Box>
 							</Flex>
@@ -356,22 +359,18 @@ const AddBill = () => {
 											<Checkbox
 												key={member.user_id}
 												value={member.username}
-												onChange={(value) =>
-													calculateSplit(
-														value,
-														member.user_id,
-														member.amountToPay
-													)
-												}
+												onChange={(value) => {
+													updateSelectedMember(value, member, splitType);
+												}}
 											>
 												{member.username}
 											</Checkbox>
 											<Input
 												isDisabled={splitType === 'equal'}
-												value={member.amountToPay}
+												value={equalSplit}
 												placeholder="$"
 												onChangeText={(value) =>
-													updateAmountToPay(member.user_id, value)
+													changeSplitAmount(member, value)
 												}
 												w="70px"
 											/>
@@ -384,11 +383,16 @@ const AddBill = () => {
 
 					<Flex alignItems="center" mt={4}>
 						<Box w="300px">
-							<Text textAlign="center" fontSize="md">
-								You lent ${equalSplit} to the other {groupMember.length - 1}{' '}
-								{groupMember.length - 1 <= 1 ? 'member' : 'members'} of your group
-								equally
-							</Text>
+							{splitType === 'equal' ? (
+								<Text textAlign="center" fontSize="md">
+									You lent ${equalSplit ? equalSplit?.toFixed(2) : 0} to the other{' '}
+									{groupMember.length - 1}{' '}
+									{groupMember.length - 1 <= 1 ? 'member' : 'members'} of your
+									group equally
+								</Text>
+							) : (
+								<Text>Amount splitted between group members as abovee</Text>
+							)}
 						</Box>
 					</Flex>
 					<Flex alignItems="center" mt={6}>

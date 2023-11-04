@@ -9,7 +9,6 @@ import {
 	HStack,
 	Pressable,
 	Box,
-	Alert,
 	TextArea,
 	useToast,
 } from 'native-base';
@@ -200,7 +199,8 @@ const Profile = () => {
 									keyboardType="default"
 									type="text"
 									isReadOnly={!enableEdit}
-									value={truncate(userDetails?.address, 20)}
+									value={truncate(address, 20)}
+									onChangeText={(value) => setAddress(value)}
 								/>
 							</VStack>
 						</FormControl>

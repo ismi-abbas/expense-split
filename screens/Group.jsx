@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import BaseLayout from '../components/BaseLayout';
-import { Box, Center, Flex, Pressable, ScrollView, Text, Stack } from 'native-base';
+import {
+	Box,
+	Center,
+	Flex,
+	Pressable,
+	ScrollView,
+	Text,
+	Stack,
+	PresenceTransition,
+} from 'native-base';
 import { Icon } from '@rneui/base';
 import { supabase } from '../lib/supabase';
 import { useIsFocused } from '@react-navigation/native';
-import { getData } from '../lib/methods';
 import { useLogin } from '../context/LoginProvider';
 
 const Group = ({ navigation }) => {
@@ -170,6 +178,7 @@ const Group = ({ navigation }) => {
 					<Stack direction="row" space={2}>
 						{groups?.map((group) => (
 							<Pressable
+								p={2}
 								key={group.group_id}
 								bg="white"
 								rounded="xl"
@@ -238,39 +247,53 @@ const Group = ({ navigation }) => {
 						{groups
 							?.filter((g) => g.expenses.length == 0)
 							.map((group) => (
-								<Pressable
+								<PresenceTransition
 									key={group.group_id}
-									bg="white"
-									rounded="xl"
-									shadow={1}
-									_pressed={{
-										bg: 'light.200',
+									visible={!isHidden}
+									initial={{
+										opacity: 0,
+									}}
+									animate={{
+										opacity: 1,
+										transition: {
+											duration: 250,
+										},
 									}}
 								>
-									<Box>
-										<Center
-											w={'32'}
-											h={'32'}
-											_text={{
-												fontSize: 'lg',
-												fontWeight: 'bold',
-												textAlign: 'center',
-											}}
-										>
-											{group.group_name}
-											<Text>
-												{group.expenses.length}{' '}
-												{group.expenses.length > 1 ? 'bills' : 'bill'}
-											</Text>
-											<Text>
-												{group.group_members.length}{' '}
-												{group.group_members.length > 1
-													? 'members'
-													: 'member'}
-											</Text>
-										</Center>
-									</Box>
-								</Pressable>
+									<Pressable
+										p={2}
+										bg="white"
+										rounded="xl"
+										shadow={1}
+										_pressed={{
+											bg: 'light.200',
+										}}
+									>
+										<Box>
+											<Center
+												w={'32'}
+												h={'32'}
+												_text={{
+													fontSize: 'lg',
+													fontWeight: 'bold',
+													textAlign: 'center',
+												}}
+											>
+												{group.group_name}
+												<Text>
+													{group.expenses.length}{' '}
+													{group.expenses.length > 1 ? 'bills' : 'bill'}
+												</Text>
+												<Text>
+													{group.group_members.length}{' '}
+													{group.group_members.length > 1
+														? 'members'
+														: 'member'}
+												</Text>
+											</Center>
+										</Box>
+									</Pressable>
+								</PresenceTransition>
 							))}
 					</Stack>
 				</ScrollView>

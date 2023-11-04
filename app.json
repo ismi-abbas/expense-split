@@ -39,6 +39,8 @@
     "updates": {
       "url": "https://u.expo.dev/76dbda13-1c0c-4fcf-aea3-4f911e70bdb7"
     },
-    "owner": "expense-split"
-  }
+    "owner": "expense-split",
+    "sdkVersion": "49.0.0"
+  },
+  "name": "expense-split"
 }

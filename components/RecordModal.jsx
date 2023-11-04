@@ -102,7 +102,6 @@ const RecordLayout = ({ record, closeModal, settleUp }) => {
 				</Text>
 
 				<Stack space={2} mt={4}>
-					<Text>{JSON.stringify(record)}</Text>
 					<Text fontSize="md">Bill Creator: {record.creator_name}</Text>
 					<Text fontSize="md">Bill Created on {formatDate(record.created_at)}</Text>
 					<Text fontSize="md">

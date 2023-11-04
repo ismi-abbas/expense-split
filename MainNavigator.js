@@ -107,7 +107,7 @@ const ModalStackNavigator = () => {
 				name="ViewGroup"
 				component={ViewGroup}
 				options={({ route }) => ({
-					title: `Group ${route.params.title}`,
+					title: `${route.params.title}`,
 					headerShown: true,
 				})}
 			/>

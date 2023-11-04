@@ -183,7 +183,7 @@ const Home = () => {
 										justifyContent="space-between"
 									>
 										<Text fontSize="lg" fontWeight="medium">
-											Owes you RM{friend.amount.toFixed(2)}
+											Owes you RM{friend.amount?.toFixed(2)}
 										</Text>
 									</Flex>
 								</Flex>

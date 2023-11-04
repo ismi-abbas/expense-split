@@ -14,7 +14,6 @@ import {
 	Flex,
 } from 'native-base';
 import React, { useEffect, useState } from 'react';
-174;
 import BaseLayout from '../components/BaseLayout';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { supabase } from '../lib/supabase';
@@ -91,7 +90,9 @@ const CreateGroup = ({ navigation }) => {
 					group_type: groupType,
 					created_by: userDetails.user_id,
 				})
-				.select()
+				.select(
+					`group_name, group_description, group_type, created_by, group_id, users(username)`
+				)
 				.single();
 
 			if (groupData) {
@@ -102,10 +103,10 @@ const CreateGroup = ({ navigation }) => {
 				}));
 
 				await supabase.from('activities').insert({
-					activity_description: `${userDetails?.user_id} has created group ${groupData.group_name}`,
 					activity_type: 'group',
+					activity_title: 'Group created',
+					activity_description: `${groupData.users.username} has created group ${groupData.group_name}`,
 					group_id: groupData.group_id,
-					status: 'created',
 				});
 
 				const { data, error } = await supabase
@@ -220,7 +221,7 @@ const CreateGroup = ({ navigation }) => {
 					<ScrollView horizontal showsHorizontalScrollIndicator={false}>
 						<HStack space={2}>
 							{users.map((user) => (
-								<Flex alignItems="center">
+								<Flex alignItems="center" key={user.user_id}>
 									<IconButton
 										variant="subtle"
 										bgColor="white"
