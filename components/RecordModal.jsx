@@ -3,8 +3,17 @@ import { formatDate } from '../lib/methods';
 import { Icon } from '@rneui/themed';
 import { supabase } from '../lib/supabase';
 import { useLogin } from '../context/LoginProvider';
+import { useEffect, useState } from 'react';
+import { useIsFocused } from '@react-navigation/native';
 
 const RecordModal = ({ navigation, route }) => {
+	const [expenseDetails, setExpenseDetails] = useState();
+	const isFocused = useIsFocused();
+
+	useEffect(() => {
+		fetchData();
+	}, [isFocused]);
+
 	const { userDetails } = useLogin();
 	const { record } = route.params;
 
@@ -12,7 +21,38 @@ const RecordModal = ({ navigation, route }) => {
 		navigation.goBack();
 	};
 
+	const fetchData = async () => {
+		const { data, error } = await supabase
+			.from('expense_participants')
+			.select(
+				`
+			status, 
+			amount, 
+			pending_from, 
+			paid_by, 
+			users(username), 
+			expenses(description, created_by, created_at, status)`
+			)
+			.eq('expense_id', record.expense_id)
+			.eq('pending_from', userDetails.user_id)
+			.single();
+		if (error) {
+			console.log(error);
+		}
+		console.log(data);
+
+		setExpenseDetails(data);
+	};
+
 	const settleUp = async () => {
+		const { status } = await supabase
+			.from('expense_participants')
+			.update({
+				status: 'settled',
+			})
+			.eq('expense_id', record.expense_id)
+			.eq('pending_from', userDetails.user_id);
+
 		const { data, error } = await supabase.from('transactions').insert({
 			amount: record.total_amount,
 			expense_id: record.expense_id,
@@ -24,106 +64,68 @@ const RecordModal = ({ navigation, route }) => {
 		if (error) {
 			console.log(error);
 		}
-
-		console.log('Settled');
 	};
 
 	return (
 		<Center>
 			<Modal isOpen={true} onClose={closeModal}>
-				{record.expense_type === 'settlement' ? (
-					<SettleMentLayout record={record} closeModal={closeModal} />
-				) : (
-					<RecordLayout record={record} closeModal={closeModal} settleUp={settleUp} />
-				)}
+				<Modal.Content width="400px" alignItems="center" py={10}>
+					<Stack direction="row" space={2}>
+						{record.type === 'settlement' ? (
+							<Icon
+								name="credit-card-check-outline"
+								type="material-community"
+								color="black"
+							/>
+						) : (
+							<></>
+						)}
+						<Heading size="md" alignSelf="center">
+							{record?.description ? record.description : 'Settlement'}
+						</Heading>
+					</Stack>
+					<Flex alignItems="center" mt={2} maxW="320px">
+						<Text fontSize="lg" fontWeight="medium">
+							Total bill amount: ${record.total_amount}
+						</Text>
+
+						<Stack space={2} mt={4}>
+							<Text fontSize="md">Bill Creator: {record.creator_name}</Text>
+							<Text fontSize="md">
+								Bill Created on {formatDate(record.created_at)}
+							</Text>
+							<Text fontSize="md">
+								Divided by {record.participant_count},{' '}
+								<Text fontSize="md" color="red.500">
+									you owe ${expenseDetails?.amount}{' '}
+								</Text>
+								for this expense
+							</Text>
+						</Stack>
+					</Flex>
+					<VStack mt={4} alignItems="center">
+						<Button.Group space={10}>
+							<Button
+								w={'1/3'}
+								colorScheme="purple"
+								rounded="full"
+								onPress={settleUp}
+							>
+								Settle Up
+							</Button>
+							<Button
+								w={'1/3'}
+								rounded="full"
+								colorScheme="purple"
+								onPress={closeModal}
+							>
+								Close
+							</Button>
+						</Button.Group>
+					</VStack>
+				</Modal.Content>
 			</Modal>
 		</Center>
-	);
-};
-
-const SettleMentLayout = ({ record, closeModal }) => {
-	return (
-		<Modal.Content maxWidth="400px" alignItems="center" py={10}>
-			<Stack direction="row" space={2}>
-				{record.expense_type === 'settlement' ? (
-					<Icon
-						name="credit-card-check-outline"
-						type="material-community"
-						color="black"
-					/>
-				) : (
-					<></>
-				)}
-				<Heading size="md" alignSelf="center">
-					{record?.description ? record.description : 'Settlement'}
-				</Heading>
-			</Stack>
-			<Flex alignItems="center">
-				<Text fontSize="lg" fontWeight="medium">
-					$ {record.total_amount}
-				</Text>
-
-				<Stack space={2} mt={4}>
-					<Text fontSize="md">Bill Creator: {record.created_by}</Text>
-					<Text fontSize="md">Bill made on {formatDate(record.created_at)}</Text>
-					<Text fontSize="md">Settle through: Visa Card</Text>
-				</Stack>
-			</Flex>
-
-			<Flex alignItems="center" w="full" mt={4}>
-				<Button w={'3/5'} rounded="full" colorScheme="purple" onPress={closeModal}>
-					Close
-				</Button>
-			</Flex>
-		</Modal.Content>
-	);
-};
-
-const RecordLayout = ({ record, closeModal, settleUp }) => {
-	return (
-		<Modal.Content width="400px" alignItems="center" py={10}>
-			<Stack direction="row" space={2}>
-				{record.type === 'settlement' ? (
-					<Icon
-						name="credit-card-check-outline"
-						type="material-community"
-						color="black"
-					/>
-				) : (
-					<></>
-				)}
-				<Heading size="md" alignSelf="center">
-					{record?.description ? record.description : 'Settlement'}
-				</Heading>
-			</Stack>
-			<Flex alignItems="center">
-				<Text fontSize="lg" fontWeight="medium">
-					$ {record.total_amount}
-				</Text>
-
-				<Stack space={2} mt={4}>
-					<Text fontSize="md">Bill Creator: {record.creator_name}</Text>
-					<Text fontSize="md">Bill Created on {formatDate(record.created_at)}</Text>
-					<Text fontSize="md">
-						Divided by {record.participant_count},{' '}
-						<Text fontSize="md" color="red.500">
-							you owe {record.total_amount}$
-						</Text>
-						for this expense
-					</Text>
-				</Stack>
-			</Flex>
-			<VStack mt={4} alignItems="center">
-				<Button.Group space={10}>
-					<Button w={'1/3'} colorScheme="purple" rounded="full" onPress={settleUp}>
-						Settle Up
-					</Button>
-					<Button w={'1/3'} rounded="full" colorScheme="purple" onPress={closeModal}>
-						Close
-					</Button>
-				</Button.Group>
-			</VStack>
-		</Modal.Content>
 	);
 };
 

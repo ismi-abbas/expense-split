@@ -76,8 +76,29 @@ const Home = () => {
 						.single();
 
 					f.username = userData.username;
+					f.gender = userData.gender;
 				}
-				setFriendList(friends);
+
+				const reduced = friends.reduce((result, expense) => {
+					const key = `${expense.paid_by}-${expense.pending_from}`;
+
+					if (!result[key]) {
+						result[key] = {
+							paid_by: expense.paid_by,
+							pending_from: expense.pending_from,
+							gender: expense.gender,
+							username: expense.username,
+							amount: 0,
+						};
+					}
+
+					result[key].amount += expense.amount;
+					return result;
+				}, {});
+
+				const friendsArray = Object.values(reduced);
+
+				setFriendList(friendsArray);
 				setAmountOwed(amountOwed);
 				setAmountOwe(amountOwe);
 			}
@@ -160,7 +181,7 @@ const Home = () => {
 							{friendList?.map((friend, i) => (
 								<Flex
 									direction="row"
-									key={i}
+									key={friend.pending_from}
 									p={2}
 									alignItems="center"
 									justifyContent="space-between"
@@ -170,7 +191,13 @@ const Home = () => {
 									borderBottomColor="gray.200"
 								>
 									<Flex direction="row">
-										<Icon size={30} name="face-man" type="material-community" />
+										<Icon
+											size={30}
+											name={
+												friend.gender == 'male' ? 'face-man' : 'face-woman'
+											}
+											type="material-community"
+										/>
 										<Flex ml={2} justifyContent="start" w="100px">
 											<Text fontSize="lg" fontWeight="medium">
 												{friend.username}
@@ -183,7 +210,7 @@ const Home = () => {
 										justifyContent="space-between"
 									>
 										<Text fontSize="lg" fontWeight="medium">
-											Owes you RM{friend.amount?.toFixed(2)}
+											Owes you ${friend.amount?.toFixed(2)}
 										</Text>
 									</Flex>
 								</Flex>

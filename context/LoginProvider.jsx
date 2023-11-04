@@ -7,6 +7,7 @@ const LoginProvider = ({ children }) => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [userDetails, setUserDetails] = useState();
 
+	// enable for development - no login required. Data query from supabase users table
 	useEffect(() => {
 		setUserDetails({
 			address: '',

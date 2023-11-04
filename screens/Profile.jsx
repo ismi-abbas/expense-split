@@ -39,7 +39,6 @@ const Profile = () => {
 
 	const logout = async () => {
 		try {
-			AsyncStorage.clear();
 			setIsLoggedIn(false);
 			setUserDetails(null);
 		} catch (err) {
@@ -199,7 +198,7 @@ const Profile = () => {
 									keyboardType="default"
 									type="text"
 									isReadOnly={!enableEdit}
-									value={truncate(address, 20)}
+									value={truncate(address ?? 'No address found!', 20)}
 									onChangeText={(value) => setAddress(value)}
 								/>
 							</VStack>

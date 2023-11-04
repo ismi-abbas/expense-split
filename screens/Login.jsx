@@ -16,8 +16,7 @@ import {
 import { useLogin } from '../context/LoginProvider';
 import BaseLayout from '../components/BaseLayout';
 import { supabase } from '../lib/supabase';
-import { comparePasswords, storeData } from '../lib/methods';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { comparePasswords } from '../lib/methods';
 
 const Login = ({ navigation }) => {
 	const { setIsLoggedIn, setUserDetails } = useLogin();
