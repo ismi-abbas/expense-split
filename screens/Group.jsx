@@ -29,9 +29,8 @@ const Group = ({ navigation }) => {
 
 	const fetchData = async () => {
 		try {
-			const [expensesResponse, groupMembersResponse, groupsResponse, allUsersResponse] =
-				await Promise.all([
-					supabase.from('expenses').select(`
+			const [expensesResponse, groupsResponse, allUsersResponse] = await Promise.all([
+				supabase.from('expenses').select(`
 				expense_id, 
 				group_id,
 				paid_by,
@@ -39,34 +38,35 @@ const Group = ({ navigation }) => {
 				total_amount,
 				created_by,
 				expense_type,
-				expense_participants(participant_id, expense_id, status, created_at, amount, pending_from, paid_by)
-			  `),
+				expense_participants(participant_id, expense_id, status, created_at, amount, pending_from, paid_by)`),
 
-					supabase
-						.from('group_members')
-						.select('group_id')
-						.eq('user_id', userDetails.user_id),
-
-					supabase.from('groups').select(`
+				supabase.from('groups').select(`
 				group_id, 
 				group_name, 
 				created_at, 
 				group_description, 
 				created_by, 
 				group_type, 
-				expenses(total_amount, description, expense_type, status, created_at, created_by, expense_id, paid_by), 
+				expenses(
+					total_amount, 
+					description, 
+					expense_type, 
+					status, 
+					created_at, 
+					created_by, 
+					expense_id, 
+					paid_by, 
+					expense_participants(participant_id, pending_from, paid_by, expense_id, status, users(username))), 
 				group_members(user_id, role), 
 				users(username, email, gender)`),
-					supabase.from('users').select(),
-				]);
+
+				supabase.from('users').select(),
+			]);
 
 			if (expensesResponse.error) {
 				console.log(expensesResponse.error);
 			}
 
-			if (groupMembersResponse.error) {
-				console.log(groupMembersResponse.error);
-			}
 			if (groupsResponse.error) {
 				console.log(groupsResponse.error);
 			}
@@ -75,19 +75,15 @@ const Group = ({ navigation }) => {
 			}
 
 			const allExpenses = expensesResponse.data;
-			const myGroup = groupMembersResponse.data;
 			const groups = groupsResponse.data;
 			const allUsers = allUsersResponse.data;
 
-			if (allExpenses && myGroup) {
-				const filteredExpenses = allExpenses.filter((expense) =>
-					myGroup.some((group) => group.group_id === expense.group_id)
-				);
+			if (allExpenses) {
 				let amountOwed = 0;
 				let amountOwe = 0;
 
 				let friends = [];
-				filteredExpenses?.forEach((expense) => {
+				allExpenses?.forEach((expense) => {
 					expense.expense_participants.forEach((participant) => {
 						if (participant.status === 'unsettled') {
 							if (
@@ -119,6 +115,7 @@ const Group = ({ navigation }) => {
 				setAmountOwe(amountOwe);
 			}
 
+			// filter user group only
 			const filteredGroups = groups.filter((group) =>
 				group.group_members.some((member) => member.user_id === userDetails?.user_id)
 			);
@@ -133,6 +130,14 @@ const Group = ({ navigation }) => {
 						(ex) => ex.expense_id == expense.expense_id
 					).expense_participants.length;
 				});
+			});
+
+			filteredGroups.forEach((group) => {
+				group.expenses = group.expenses.filter((expense) =>
+					expense.expense_participants.some(
+						(participant) => participant.pending_from === userDetails.user_id
+					)
+				);
 			});
 
 			if (filteredGroups) {
