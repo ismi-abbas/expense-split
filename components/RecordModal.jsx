@@ -103,7 +103,7 @@ const RecordModal = ({ navigation, route }) => {
 						<Heading size="md" alignSelf="center">
 							{expenseDetails?.status === 'settled'
 								? 'Settlement'
-								: expenseDetails?.description}
+								: expenseDetails?.expenses.description}
 						</Heading>
 					</Stack>
 					{expenseDetails?.status === 'unsettled' ? (

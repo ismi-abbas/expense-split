@@ -10,6 +10,8 @@ import {
 	useToast,
 	Text,
 	Flex,
+	Select,
+	CheckIcon,
 } from 'native-base';
 import { useState } from 'react';
 import BaseLayout from '../components/BaseLayout';
@@ -27,6 +29,7 @@ const SignUp = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [fullName, setFullName] = useState('');
 	const [address, setAddress] = useState('');
+	const [gender, setGender] = useState('');
 
 	const showErrorToast = (message) => {
 		toast.show({
@@ -45,9 +48,9 @@ const SignUp = () => {
 			return;
 		}
 
-		setIsLoading(true);
-
 		const { password: hashedPassword } = hashPasssword(password);
+
+		setIsLoading(true);
 
 		const { error, status } = await supabase.from('users').insert({
 			username: username,
@@ -57,6 +60,7 @@ const SignUp = () => {
 			address: address,
 			phone_number: phoneNumber,
 			role_id: 1,
+			gender: gender,
 		});
 
 		if (error) {
@@ -122,11 +126,6 @@ const SignUp = () => {
 										onChangeText={setEmail}
 										variant="rounded"
 									/>
-									<FormControl.ErrorMessage
-										leftIcon={<WarningOutlineIcon size="xs" />}
-									>
-										At least 6 characters are required.
-									</FormControl.ErrorMessage>
 								</Stack>
 							</FormControl>
 							<FormControl>
@@ -145,11 +144,35 @@ const SignUp = () => {
 										onChangeText={setPhoneNumber}
 										variant="rounded"
 									/>
-									<FormControl.ErrorMessage
-										leftIcon={<WarningOutlineIcon size="xs" />}
+								</Stack>
+							</FormControl>
+							<FormControl>
+								<Stack>
+									<FormControl.Label
+										_text={{
+											fontSize: 'sm',
+										}}
 									>
-										At least 6 characters are required.
-									</FormControl.ErrorMessage>
+										Gender
+									</FormControl.Label>
+									<Select
+										colorScheme="purple"
+										variant="rounded"
+										selectedValue={gender}
+										placeholder="Gender"
+										_selectedItem={{
+											bg: 'purple.200',
+											endIcon: <CheckIcon size="5" />,
+										}}
+										mt={1}
+										size="md"
+										onValueChange={(itemValue) => {
+											setGender(itemValue);
+										}}
+									>
+										<Select.Item label="Male" value="male" />
+										<Select.Item label="Female" value="female" />
+									</Select>
 								</Stack>
 							</FormControl>
 							<FormControl isRequired>
@@ -200,7 +223,7 @@ const SignUp = () => {
 					</Box>
 				</Box>
 
-				<Stack alignItems="center" mt={20} space={2}>
+				<Stack alignItems="center" mt={10} space={2}>
 					<Button
 						py={2}
 						size="lg"
