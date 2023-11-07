@@ -35,7 +35,6 @@ const SignUp = () => {
 	};
 
 	const handleSignUp = async () => {
-		setIsLoading(true);
 		if (!username || !email || !phoneNumber || !password || !passwordConfirmation) {
 			showErrorToast('Please fill all fields');
 			return;
@@ -45,6 +44,8 @@ const SignUp = () => {
 			showErrorToast('Password mismatch');
 			return;
 		}
+
+		setIsLoading(true);
 
 		const { password: hashedPassword } = hashPasssword(password);
 

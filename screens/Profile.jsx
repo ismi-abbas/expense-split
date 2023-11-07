@@ -25,13 +25,15 @@ const Profile = () => {
 	const { setIsLoggedIn, userDetails, setUserDetails } = useLogin();
 	const toast = useToast();
 	const isFocused = useIsFocused();
-
 	const [loading, setLoading] = useState(true);
-	const [email, setEmail] = useState();
-	const [address, setAddress] = useState();
-	const [phoneNumber, setPhoneNumber] = useState();
 	const [enableEdit, setEnableEdit] = useState(false);
-	const [username, setUsername] = useState();
+	const [userProfile, setUserProfile] = useState({
+		email: '',
+		address: '',
+		phoneNumber: '',
+		username: '',
+		fullName: '',
+	});
 
 	useEffect(() => {
 		fetchUserProfile();
@@ -54,6 +56,13 @@ const Profile = () => {
 		console.log('Bank details updated');
 	};
 
+	const editProfile = (field, value) => {
+		setUserProfile((prevProfile) => ({
+			...prevProfile,
+			[field]: value,
+		}));
+	};
+
 	const fetchUserProfile = async () => {
 		const { data: userProfile, error } = await supabase
 			.from('users')
@@ -62,22 +71,25 @@ const Profile = () => {
 			.single();
 
 		if (userProfile) {
-			setUserDetails(userProfile);
-			setEmail(userProfile.email);
-			setPhoneNumber(userProfile.phone_number);
-			setAddress(userProfile.address);
-			setUsername(userProfile.username);
+			setUserProfile({
+				email: userProfile.email,
+				address: userProfile.address,
+				phoneNumber: userProfile.phone_number,
+				username: userProfile.username,
+				fullName: userProfile.full_name,
+			});
 		}
 	};
 	async function updateProfile() {
 		setLoading(true);
 
 		const { data, status } = await supabase.from('users').upsert({
-			address: address,
-			email: email,
-			phone_number: phoneNumber,
-			username: username,
+			address: userProfile.address,
+			email: userProfile.email,
+			phone_number: userProfile.phoneNumber,
+			username: userProfile.username,
 			user_id: userDetails.user_id,
+			full_name: userProfile.fullName,
 		});
 
 		if (status === 201) {
@@ -127,12 +139,12 @@ const Profile = () => {
 								variant="underlined"
 								keyboardType="default"
 								type="text"
-								value={username}
+								value={userProfile.username}
 								fontWeight="bold"
-								onChangeText={(value) => setUsername(value)}
+								onChangeText={(value) => editProfile('username', value)}
 							/>
 						) : (
-							<Heading>{username}</Heading> // Display as text when not in edit mode
+							<Heading>{userProfile.username}</Heading> // Display as text when not in edit mode
 						)}
 					</HStack>
 
@@ -154,8 +166,30 @@ const Profile = () => {
 									keyboardType="default"
 									type="text"
 									isReadOnly={!enableEdit}
-									value={email}
-									onChangeText={(value) => setEmail(value)}
+									value={userProfile.email}
+									onChangeText={(value) => editProfile('email', value)}
+								/>
+							</VStack>
+						</FormControl>
+						<FormControl>
+							<VStack>
+								<FormControl.Label
+									_text={{
+										fontSize: 'sm',
+										color: 'black',
+									}}
+								>
+									Full Name
+								</FormControl.Label>
+								<Input
+									bg="light.50"
+									size="lg"
+									variant="rounded"
+									keyboardType="default"
+									type="text"
+									isReadOnly={!enableEdit}
+									value={userProfile.fullName}
+									onChangeText={(value) => editProfile('fullName', value)}
 								/>
 							</VStack>
 						</FormControl>
@@ -176,8 +210,8 @@ const Profile = () => {
 									keyboardType="default"
 									type="text"
 									isReadOnly={!enableEdit}
-									value={phoneNumber}
-									onChangeText={(value) => setPhoneNumber(value)}
+									value={userProfile.phoneNumber}
+									onChangeText={(value) => editProfile('phoneNumber', value)}
 								/>
 							</VStack>
 						</FormControl>
@@ -198,8 +232,8 @@ const Profile = () => {
 									keyboardType="default"
 									type="text"
 									isReadOnly={!enableEdit}
-									value={truncate(address ?? 'No address found!', 20)}
-									onChangeText={(value) => setAddress(value)}
+									value={userProfile.address ?? 'No address found!'}
+									onChangeText={(value) => editProfile('address', value)}
 								/>
 							</VStack>
 						</FormControl>
